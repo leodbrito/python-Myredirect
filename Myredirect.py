@@ -19,12 +19,12 @@ class Myredirect:
         pass
     
     def build_redirect(self):
-        protocol = str(self.protocol).strip()
+        protocol = str(self.protocol).strip().upper()
         source_url = str(self.source_url).strip().split()
         dest_url = str(self.dest_url).strip()
         
         if protocol.find('#') != 0:
-            protocol = '#'+protocol.upper()
+            protocol = '#'+protocol
 
         compile1 = re.compile("^http[s]?.*com/")
         concat1 = []
@@ -90,7 +90,7 @@ def autenticar():
         usuario = usuarios[request.form['usuario']]
         if usuario.senha == request.form['senha']:
             session['usuario_logado'] = usuario.id
-            flash(usuario.nome + 'logou com sucesso!')
+            flash(usuario.nome +' logou com sucesso!')
             proxima_pagina = request.form['proxima']
             return redirect(proxima_pagina)
         else:
