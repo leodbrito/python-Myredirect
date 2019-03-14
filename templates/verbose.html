@@ -1,0 +1,21 @@
+{% extends "template.html" %}
+{% block conteudo %}
+    <table class="table table-striped table-responsive table-bordered">
+        <thead>
+            <tr>
+                <th>Meus Redirects</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for input in redirect_input_list %}
+                        <tr>
+                            <td>{{ input.prot }}</br>
+                                {% for item in input.rule %}
+                                    {{ item }}</br>
+                                {% endfor %}
+                            </td>
+                        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
