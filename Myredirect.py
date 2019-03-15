@@ -1,5 +1,4 @@
-import subprocess
-import re
+import re, subprocess
 from flask import Flask, render_template, request, redirect, session, flash, url_for
 
 app = Flask(__name__)
@@ -77,12 +76,10 @@ def criar():
 def verbose():
     return render_template('verbose.html', titulo='Meus Redirects', redirect_input_list=redirect_input_list)
 
-
 @app.route('/login')
 def login():
     proxima = request.args.get('proxima')
     return render_template('login.html', proxima=proxima)
-
 
 @app.route('/autenticar', methods=['POST', ])
 def autenticar():
@@ -100,12 +97,10 @@ def autenticar():
         flash('Usuário e/ou senha incorretos, tente novamente!')
         return redirect(url_for('login'))
 
-
 @app.route('/logout')
 def logout():
     session['usuario_logado'] = None
     flash('Nenhum usuário logado!')
     return redirect(url_for('index'))
-
 
 app.run(debug=True, host='0.0.0.0', port=8080)
