@@ -11,10 +11,41 @@ class Myredirect:
         self.dest_url = dest_url
         self.filepath = filepath
 
+    def check_source_url_ok(self):
+        source_url = str(self.source_url).strip().split()
+        url_ok_list = []
+        url_nook_list = []
+        for url in source_url:
+            p1 = subprocess.Popen(['curl', '-sIL' , url], stdout=subprocess.PIPE)
+            p2 = subprocess.Popen(['grep', ' 200'], stdin=p1.stdout, stdout=subprocess.PIPE)
+            p1.stdout.close()
+            output = str(p2.communicate()[0].decode()).strip()
+            if output.find(' 200') != -1 :
+                url_ok_list.append(url)
+            else:
+                url_nook_list.append(url)
+        if len(url_nook_list) == 0:
+            return True
+        else:
+            return False
+
+                
+    
+    def checkdest_url_ok(self):
+        dest_url = str(self.dest_url).strip()
+        p1 = subprocess.Popen(['curl', '-sIL' , dest_url], stdout=subprocess.PIPE)
+        p2 = subprocess.Popen(['grep', ' 200'], stdin=p1.stdout, stdout=subprocess.PIPE)
+        p1.stdout.close()
+        output = str(p2.communicate()[0].decode()).strip()
+        if output.find(' 200') != -1 :
+            return True
+        else:
+            return False
+    
     def chgcurl(self):
         pass
 
-    def check_redirect(self):
+    def check_redirect_exist(self):
         pass
     
     def build_redirect(self):
@@ -22,23 +53,23 @@ class Myredirect:
         source_url = str(self.source_url).strip().split()
         dest_url = str(self.dest_url).strip()
         
-        if protocol.find('#') != 0:
+        if protocol[0] != '#':
             protocol = '#'+protocol
 
-        compile1 = re.compile("^http[s]?.*com/")
-        concat1 = []
+        compile1 = re.compile(r'^http[s]?.*com/', flags=re.IGNORECASE)
+        rule_list = []
         for url in source_url:
             replace1 = compile1.sub(r'rewrite ^/',url)
-            concat1.append(replace1+f'$ {dest_url} permanent;')
+            rule_list.append(replace1+f'$ {dest_url} permanent;')
         #redirect_output=Nul
         #redirect_output={'prot':protocol}
-        #for i in range(0, len(concat1)):
-            #redirect_output+=f'{concat1[i]}\n'
-            #redirect_output[f'rule{i}']=concat1[i]
+        #for i in range(0, len(rule_list)):
+            #redirect_output+=f'{rule_list[i]}\n'
+            #redirect_output[f'rule{i}']=rule_list[i]
         
         #redirect_output = f'{protocol}\n{redirect_output}'
         #return redirect_output
-        return {'prot':protocol, 'rule':concat1}
+        return {'prot':protocol, 'rule':rule_list}
 
 class Usuario:
     def __init__(self, id, nome, senha):
@@ -70,6 +101,8 @@ def criar():
     dest_url = request.form['dest_url']
     redirect_input = Myredirect(protocol, source_url, dest_url).build_redirect()
     redirect_input_list.append(redirect_input)
+    teste = 'teste'
+    Myredirect(source_url).check_source_url_ok()
     return redirect(url_for('verbose'))
 
 @app.route('/verbose')
