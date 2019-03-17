@@ -11,27 +11,7 @@ class Myredirect:
         self.dest_url = dest_url
         self.filepath = filepath
 
-    def check_source_url_ok(self):
-        source_url = str(self.source_url).strip().split()
-        url_ok_list = []
-        url_nook_list = []
-        for url in source_url:
-            p1 = subprocess.Popen(['curl', '-sIL' , url], stdout=subprocess.PIPE)
-            p2 = subprocess.Popen(['grep', ' 200'], stdin=p1.stdout, stdout=subprocess.PIPE)
-            p1.stdout.close()
-            output = str(p2.communicate()[0].decode()).strip()
-            if output.find(' 200') != -1 :
-                url_ok_list.append(url)
-            else:
-                url_nook_list.append(url)
-        if len(url_nook_list) == 0:
-            return True
-        else:
-            return False
-
-                
-    
-    def checkdest_url_ok(self):
+    def check_dest_url_ok(self):
         dest_url = str(self.dest_url).strip()
         p1 = subprocess.Popen(['curl', '-sIL' , dest_url], stdout=subprocess.PIPE)
         p2 = subprocess.Popen(['grep', ' 200'], stdin=p1.stdout, stdout=subprocess.PIPE)
@@ -41,11 +21,22 @@ class Myredirect:
             return True
         else:
             return False
-    
-    def chgcurl(self):
-        pass
 
     def check_redirect_exist(self):
+        source_url = str(self.source_url).strip().split()
+        url_redirect_exist_list = []
+        url_redirect_not_exist_list = []
+        uri_list = []
+        compile1 = re.compile(r'^http[s]?.*com/', flags=re.IGNORECASE)
+        conf_file = open('show-services.conf','r')
+        for url in source_url:
+            uri = compile1.sub(r'/',url)
+            for line in conf_file:
+                if line.find(uri) != -1:
+                    url_redirect_exist_list.append(url)
+        return {'yes':url_redirect_exist_list , 'no':url_redirect_not_exist_list}
+    
+    def chgcurl(self):
         pass
     
     def build_redirect(self):
@@ -61,14 +52,7 @@ class Myredirect:
         for url in source_url:
             replace1 = compile1.sub(r'rewrite ^/',url)
             rule_list.append(replace1+f'$ {dest_url} permanent;')
-        #redirect_output=Nul
-        #redirect_output={'prot':protocol}
-        #for i in range(0, len(rule_list)):
-            #redirect_output+=f'{rule_list[i]}\n'
-            #redirect_output[f'rule{i}']=rule_list[i]
         
-        #redirect_output = f'{protocol}\n{redirect_output}'
-        #return redirect_output
         return {'prot':protocol, 'rule':rule_list}
 
 class Usuario:
@@ -86,23 +70,21 @@ redirect_input_list = []
 
 @app.route('/')
 def index():
-    return render_template('login.html', proxima=url_for('novo'))
+    return render_template('login.html', proxima=url_for('new'))
 
-@app.route('/novo')
-def novo():
+@app.route('/new')
+def new():
     if 'usuario_logado' not in session or session['usuario_logado'] == None:
-        return redirect(url_for('login', proxima=url_for('novo')))
-    return render_template('novo.html', titulo='Novo Redirect')
+        return redirect(url_for('login', proxima=url_for('new')))
+    return render_template('new.html', titulo='Novo Redirect')
 
-@app.route('/criar', methods=['POST',])
-def criar():
+@app.route('/create', methods=['POST',])
+def create():
     protocol = request.form['protocol']
     source_url = request.form['source_url']
     dest_url = request.form['dest_url']
     redirect_input = Myredirect(protocol, source_url, dest_url).build_redirect()
     redirect_input_list.append(redirect_input)
-    teste = 'teste'
-    Myredirect(source_url).check_source_url_ok()
     return redirect(url_for('verbose'))
 
 @app.route('/verbose')
@@ -114,8 +96,8 @@ def login():
     proxima = request.args.get('proxima')
     return render_template('login.html', proxima=proxima)
 
-@app.route('/autenticar', methods=['POST', ])
-def autenticar():
+@app.route('/authenticate', methods=['POST', ])
+def authenticate():
     if request.form['usuario'] in usuarios:
         usuario = usuarios[request.form['usuario']]
         if usuario.senha == request.form['senha']:
