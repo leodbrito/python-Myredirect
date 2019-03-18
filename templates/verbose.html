@@ -12,11 +12,11 @@
                             <td>{{ input.prot }}</br>
                                 {% for item in input.rule %}
                                     {{ item }}</br>
-                                {% endfor %}
+                                {% endfor %}</br>
+                                <b>{{ input.dest_url_ok }}</b>
                             </td>
                         </tr>
         {% endfor %}
         </tbody>
     </table>
-    <b>Teste: </b>
 {% endblock %}

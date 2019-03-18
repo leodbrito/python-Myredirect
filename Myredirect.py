@@ -34,6 +34,7 @@ class Myredirect:
             for line in conf_file:
                 if line.find(uri) != -1:
                     url_redirect_exist_list.append(url)
+        conf_file.close()
         return {'yes':url_redirect_exist_list , 'no':url_redirect_not_exist_list}
     
     def chgcurl(self):
@@ -53,7 +54,13 @@ class Myredirect:
             replace1 = compile1.sub(r'rewrite ^/',url)
             rule_list.append(replace1+f'$ {dest_url} permanent;')
         
-        return {'prot':protocol, 'rule':rule_list}
+        dest_url_ok = self.check_dest_url_ok()
+        if dest_url_ok:
+            dest_url_ok = 'A URL de destino está OK!'
+        else:
+            dest_url_ok = 'A URL de destino NÃO está OK! Necessário checar!'
+        
+        return {'prot':protocol, 'rule':rule_list, 'dest_url_ok':dest_url_ok}
 
 class Usuario:
     def __init__(self, id, nome, senha):
@@ -67,6 +74,7 @@ usuario2 = Usuario('Nico', 'Nico Steppat', '123')
 usuarios = {usuario1.id: usuario1,
             usuario2.id: usuario2}
 redirect_input_list = []
+#dest_url_ok = None
 
 @app.route('/')
 def index():
@@ -74,7 +82,7 @@ def index():
 
 @app.route('/new')
 def new():
-    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+    if 'logged_user' not in session or session['logged_user'] == None:
         return redirect(url_for('login', proxima=url_for('new')))
     return render_template('new.html', titulo='Novo Redirect')
 
@@ -83,8 +91,11 @@ def create():
     protocol = request.form['protocol']
     source_url = request.form['source_url']
     dest_url = request.form['dest_url']
-    redirect_input = Myredirect(protocol, source_url, dest_url).build_redirect()
+    myredirect = Myredirect(protocol, source_url, dest_url)
+    redirect_input = myredirect.build_redirect()
     redirect_input_list.append(redirect_input)
+    #global dest_url_ok
+    #dest_url_ok = myredirect.check_dest_url_ok()
     return redirect(url_for('verbose'))
 
 @app.route('/verbose')
@@ -101,7 +112,7 @@ def authenticate():
     if request.form['usuario'] in usuarios:
         usuario = usuarios[request.form['usuario']]
         if usuario.senha == request.form['senha']:
-            session['usuario_logado'] = usuario.id
+            session['logged_user'] = usuario.id
             flash(usuario.nome +' logou com sucesso!')
             proxima_pagina = request.form['proxima']
             return redirect(proxima_pagina)
@@ -114,7 +125,7 @@ def authenticate():
 
 @app.route('/logout')
 def logout():
-    session['usuario_logado'] = None
+    session['logged_user'] = None
     flash('Nenhum usuário logado!')
     return redirect(url_for('index'))
 
