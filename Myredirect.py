@@ -5,7 +5,7 @@ app = Flask(__name__)
 app.secret_key = 'bolsominion'
 
 class Myredirect:
-    def __init__(self, protocol=None, source_url=None, dest_url=None, filepath=None):
+    def __init__(self, protocol=None, source_url=None, dest_url=None, filepath='show-services.conf'):
         self.protocol = protocol
         self.source_url = source_url
         self.dest_url = dest_url
@@ -22,21 +22,42 @@ class Myredirect:
         else:
             return False
 
-    def check_redirect_exist(self):
+    def check_redirect_already_exist(self):
         source_url = str(self.source_url).strip().split()
-        url_redirect_exist_list = []
-        url_redirect_not_exist_list = []
-        uri_list = []
+        i = 1
+        line_index_redirect_already_exist_list= []
+        url_redirect_already_exist_list = []
+        line_redirect_already_exist_list = []
+        conf_file = []
+        conf_file_openned = open(self.filepath,'r')
+        for line in conf_file_openned:
+                    line = str(line).rstrip()
+                    conf_file.append(line)
+
+        conf_file_openned.close()
         compile1 = re.compile(r'^http[s]?.*com/', flags=re.IGNORECASE)
-        conf_file = open('show-services.conf','r')
         for url in source_url:
-            uri = compile1.sub(r'/',url)
+            uri = str(compile1.sub(r'/',url))
             for line in conf_file:
-                if line.find(uri) != -1:
-                    url_redirect_exist_list.append(url)
-        conf_file.close()
-        return {'yes':url_redirect_exist_list , 'no':url_redirect_not_exist_list}
+                if line.find(uri) != -1 and line[0] != '#' :
+                    line_index_redirect_already_exist_list.append(i)
+                    url_redirect_already_exist_list.append(url)
+                    line_redirect_already_exist_list.append(line)
+                i += 1
+        
+        return {'line_index_list':line_index_redirect_already_exist_list, 'line_list':line_redirect_already_exist_list, 'url_list':url_redirect_already_exist_list, 'conf_file':conf_file}
     
+    def edit_file_line(self, line_index, new_line):
+        conf_file = self.filepath
+        with open(conf_file,'r') as f:
+            file=f.readlines()
+        with open(conf_file,'w') as f:
+            for line in file:
+                if file.index(line) == line_index:
+                    f.write(new_line+'\n')
+                else:
+                    f.write(line)
+
     def chgcurl(self):
         pass
     
@@ -45,22 +66,30 @@ class Myredirect:
         source_url = str(self.source_url).strip().split()
         dest_url = str(self.dest_url).strip()
         
+        # Cria a linha comentada referenciando o numero do protocolo
         if protocol[0] != '#':
             protocol = '#'+protocol
 
-        compile1 = re.compile(r'^http[s]?.*com/', flags=re.IGNORECASE)
+        # Compila os inputs para criar a lista de regras
         rule_list = []
+        compile1 = re.compile(r'^http[s]?.*com/', flags=re.IGNORECASE)
         for url in source_url:
             replace1 = compile1.sub(r'rewrite ^/',url)
             rule_list.append(replace1+f'$ {dest_url} permanent;')
         
+        # Checa se a URL de destino informada está OK
         dest_url_ok = self.check_dest_url_ok()
-        if dest_url_ok:
-            dest_url_ok = 'A URL de destino está OK!'
-        else:
-            dest_url_ok = 'A URL de destino NÃO está OK! Necessário checar!'
-        
-        return {'prot':protocol, 'rule':rule_list, 'dest_url_ok':dest_url_ok}
+        if not dest_url_ok:
+            dest_url_ok = 'URL de destino NÃO OK! Necessário checar!'
+
+        # Retorna as URLs informadas que ja possuem redirect configurado no arquivo
+        rae = self.check_redirect_already_exist()
+        #if rae['line_index_list'][0] != "" :
+        #    for index in rae['line_index_list']:
+        #        new_line = '#'+rae['line_list'][index]
+        #        self.edit_file_line(index, new_line)
+                
+        return {'prot':protocol, 'rule':rule_list, 'dest_url_ok':dest_url_ok,'rae_index_list':rae['line_index_list'], 'rae_line_list':rae['line_list'], 'rae_url_list':rae['url_list']}
 
 class Usuario:
     def __init__(self, id, nome, senha):
@@ -74,7 +103,6 @@ usuario2 = Usuario('Nico', 'Nico Steppat', '123')
 usuarios = {usuario1.id: usuario1,
             usuario2.id: usuario2}
 redirect_input_list = []
-#dest_url_ok = None
 
 @app.route('/')
 def index():
@@ -94,8 +122,6 @@ def create():
     myredirect = Myredirect(protocol, source_url, dest_url)
     redirect_input = myredirect.build_redirect()
     redirect_input_list.append(redirect_input)
-    #global dest_url_ok
-    #dest_url_ok = myredirect.check_dest_url_ok()
     return redirect(url_for('verbose'))
 
 @app.route('/verbose')

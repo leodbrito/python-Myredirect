@@ -12,8 +12,15 @@
                             <td>{{ input.prot }}</br>
                                 {% for item in input.rule %}
                                     {{ item }}</br>
-                                {% endfor %}</br>
-                                <b>{{ input.dest_url_ok }}</b>
+                                {% endfor %}
+                                {% if input.dest_url_ok != True %}
+                                    </br><b>{{ input.dest_url_ok }}</b>
+                                {% endif %}
+                                {% if input.rae_line_list[0] != "" %}
+                                    {% for item in input.rae_line_list %}
+                                        </br><b>{{ item }}</b>
+                                    {% endfor %}
+                                {% endif %}
                             </td>
                         </tr>
         {% endfor %}
