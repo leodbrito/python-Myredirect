@@ -38,7 +38,7 @@ with open(conf_file,'r') as f:
 
 with open(conf_file,'w') as f:
     for line in file:
-        if file.index(line) == line_index:
+        if file.index(line)+1 == line_index:
             f.write(new_line+'\n')
         else:
             f.write(line)
