@@ -31,13 +31,13 @@ class Myredirect:
         conf_file = []
         conf_file_openned = open(self.filepath,'r')
         for line in conf_file_openned:
-                    line = str(line).rstrip()
-                    conf_file.append(line)
+            line = str(line).rstrip()
+            conf_file.append(line)
 
         conf_file_openned.close()
         compile1 = re.compile(r'^http[s]?.*com/', flags=re.IGNORECASE)
         for url in source_url:
-            uri = str(compile1.sub(r'/',url))
+            uri = str(compile1.sub(r'rewrite ^/',url))
             for line in conf_file:
                 if line.find(uri) != -1 and line[0] != '#' :
                     line_index_redirect_already_exist_list.append(i)
@@ -80,7 +80,7 @@ class Myredirect:
         # Checa se a URL de destino informada está OK
         dest_url_ok = self.check_dest_url_ok()
         if not dest_url_ok:
-            dest_url_ok = 'URL de destino NÃO OK! Necessário checar!'
+            dest_url_ok = f'ATENÇÃO: a URL de destino, {dest_url}, NÃO está retornando status 200, necessário checar!'
 
         # Retorna as URLs informadas que ja possuem redirect configurado no arquivo
         rae = self.check_redirect_already_exist()
@@ -89,7 +89,7 @@ class Myredirect:
         #        new_line = '#'+rae['line_list'][index]
         #        self.edit_file_line(index, new_line)
                 
-        return {'prot':protocol, 'rule':rule_list, 'dest_url_ok':dest_url_ok,'rae_index_list':rae['line_index_list'], 'rae_line_list':rae['line_list'], 'rae_url_list':rae['url_list']}
+        return {'prot':protocol, 'rule':rule_list, 'dest_url_ok':dest_url_ok, 'rae':rae}
 
 class Usuario:
     def __init__(self, id, nome, senha):
