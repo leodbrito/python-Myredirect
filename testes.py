@@ -30,11 +30,11 @@ for url in source_url:
 line_index = 1617
 new_line = '#rewrite ^/realities/bbb/bbb19/votacao/playlistbbb-que-musica-voce-quer-ouvir-na-proxima-festa-vote-c4fc6280-2b63-43ab-9050-00055d8491c8.ghtml$ https://gshow.globo.com/realities/bbb/ permanent;'
 conf_file = 'show-services.conf'
-file = []
 with open(conf_file,'r') as f:
-    for line in f:
-        line = str(line).rstrip()
-        file.append(line)
+    file=f.readlines()
+
+for l in file:
+    file.index(l)
 
 with open(conf_file,'w') as f:
     for line in file:

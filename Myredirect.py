@@ -24,26 +24,20 @@ class Myredirect:
 
     def check_redirect_already_exist(self):
         source_url = str(self.source_url).strip().split()
-        i = 1
         line_index_redirect_already_exist_list= []
         url_redirect_already_exist_list = []
         line_redirect_already_exist_list = []
-        conf_file = []
-        conf_file_openned = open(self.filepath,'r')
-        for line in conf_file_openned:
-            line = str(line).rstrip()
-            conf_file.append(line)
+        with open(self.filepath,'r') as conf_file_openned:
+            conf_file = conf_file_openned.readlines()
 
-        conf_file_openned.close()
         compile1 = re.compile(r'^http[s]?.*com/', flags=re.IGNORECASE)
         for url in source_url:
             uri = str(compile1.sub(r'rewrite ^/',url))
             for line in conf_file:
                 if line.find(uri) != -1 and line[0] != '#' :
-                    line_index_redirect_already_exist_list.append(i)
+                    line_index_redirect_already_exist_list.append(conf_file.index(line))
                     url_redirect_already_exist_list.append(url)
                     line_redirect_already_exist_list.append(line)
-                i += 1
         
         return {'line_index_list':line_index_redirect_already_exist_list, 'line_list':line_redirect_already_exist_list, 'url_list':url_redirect_already_exist_list, 'conf_file':conf_file}
     
@@ -84,12 +78,16 @@ class Myredirect:
 
         # Retorna as URLs informadas que ja possuem redirect configurado no arquivo
         rae = self.check_redirect_already_exist()
-        #if rae['line_index_list'][0] != "" :
-        #    for index in rae['line_index_list']:
-        #        new_line = '#'+rae['line_list'][index]
-        #        self.edit_file_line(index, new_line)
+        
+        # Se a URL informada já possuir redirect configurado no arquivo, a sua linha é comentada
+        new_lines=[]
+        if rae['line_index_list'][0] != "" :
+            for index in rae['line_index_list']:
+                new_line = '#'+rae['conf_file'][index]
+                self.edit_file_line(index, new_line)
+                new_lines.append(str(index)+' '+new_line)
                 
-        return {'prot':protocol, 'rule':rule_list, 'dest_url_ok':dest_url_ok, 'rae':rae}
+        return {'prot':protocol, 'rule':rule_list, 'dest_url_ok':dest_url_ok, 'rae':rae, 'new_lines':new_lines}
 
 class Usuario:
     def __init__(self, id, nome, senha):

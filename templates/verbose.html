@@ -16,8 +16,8 @@
                                 {% if input.dest_url_ok != True %}
                                     </br><b>{{ input.dest_url_ok }}</b>
                                 {% endif %}
-                                {% if input.rae['line_list'][0] != "" %}
-                                    {% for item in input.rae['line_list'] %}
+                                {% if input.rae['line_index_list'][0] != "" %}
+                                    {% for item in input.new_lines %}
                                         </br><b>{{ item }}</b>
                                     {% endfor %}
                                 {% endif %}
