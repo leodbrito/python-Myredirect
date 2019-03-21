@@ -48,7 +48,7 @@ class Myredirect:
         with open(conf_file,'w') as f:
             for line in file:
                 if file.index(line) == line_index:
-                    f.write(new_line+'\n')
+                    f.write(new_line)
                 else:
                     f.write(line)
 
