@@ -7,22 +7,22 @@
             </tr>
         </thead>
         <tbody>
-        {% for input in redirect_input_list %}
-                        <tr>
-                            <td>{{ input.prot }}</br>
-                                {% for item in input.rule %}
-                                    {{ item }}</br>
-                                {% endfor %}
-                                {% if input.dest_url_ok != True %}
-                                    </br><b>{{ input.dest_url_ok }}</b>
-                                {% endif %}
-                                {% if input.rae['line_index_list'][0] != "" %}
-                                    {% for item in input.new_lines %}
-                                        </br><b>{{ item }}</b>
-                                    {% endfor %}
-                                {% endif %}
-                            </td>
-                        </tr>
+        {% for input in chg_input_list %}
+            <tr>
+                <td>{{ input.prot }}</br>
+                    {% for item in input.rule_list %}
+                        {{ item }}</br>
+                    {% endfor %}
+                    {% if input.dest_url_ok != True %}
+                        </br><b>{{ input.dest_url_ok }}</b>
+                    {% endif %}
+                    {% if input.rae['line_index_list'] != "" %}
+                        {% for item in input.comment_line_list %}
+                            </br><b>{{ item }}</b>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+            </tr>
         {% endfor %}
         </tbody>
     </table>

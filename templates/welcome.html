@@ -1,0 +1,12 @@
+{% extends "template.html" %}
+{% block conteudo %}
+    <div class="container">
+        <h1>Bem vindo a "Meu Redirect"!</h1>
+        O que você deseja fazer?
+        <a href="{{ url_for('templates', filename='new.html') }}">
+          <span style="display: block;">
+              Criar umm nova configuração de redirect.
+          </span>
+        </a>
+    </div>
+{% endblock %}

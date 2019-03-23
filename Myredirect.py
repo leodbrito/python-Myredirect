@@ -11,6 +11,21 @@ class Myredirect:
         self.dest_url = dest_url
         self.filepath = filepath
 
+    def read_conf_file(self):
+        with open(self.filepath,'r') as conf_file_openned:
+            conf_file = conf_file_openned.readlines()
+        return conf_file
+
+    def create_rule_list(self):
+        source_url = str(self.source_url).strip().split()
+        dest_url = str(self.dest_url).strip()
+        rule_list = []
+        compile1 = re.compile(r'^(http[s]?|www|gshow|ge|globoesporte|g1).*com(.br)?/', flags=re.IGNORECASE)
+        for url in source_url:
+            compiled = str(compile1.sub(r'rewrite ^/',url))
+            rule_list.append(compiled+f'$ {dest_url} permanent;')
+        return rule_list
+
     def check_dest_url_ok(self):
         dest_url = str(self.dest_url).strip()
         p1 = subprocess.Popen(['curl', '-sIL' , dest_url], stdout=subprocess.PIPE)
@@ -27,19 +42,17 @@ class Myredirect:
         line_index_redirect_already_exist_list= []
         url_redirect_already_exist_list = []
         line_redirect_already_exist_list = []
-        with open(self.filepath,'r') as conf_file_openned:
-            conf_file = conf_file_openned.readlines()
-
-        compile1 = re.compile(r'^http[s]?.*com/', flags=re.IGNORECASE)
+        conf_file = self.read_conf_file()
+        compile1 = re.compile(r'^(http[s]?|www|gshow|ge|globoesporte|g1).*com(.br)?/', flags=re.IGNORECASE)
         for url in source_url:
-            uri = str(compile1.sub(r'rewrite ^/',url))
+            rule = str(compile1.sub(r'rewrite ^/',url))
             for line in conf_file:
-                if line.find(uri) != -1 and line[0] != '#' :
+                if line.find(rule) != -1 and line[0] != '#' :
                     line_index_redirect_already_exist_list.append(conf_file.index(line))
                     url_redirect_already_exist_list.append(url)
                     line_redirect_already_exist_list.append(line)
         
-        return {'line_index_list':line_index_redirect_already_exist_list, 'line_list':line_redirect_already_exist_list, 'url_list':url_redirect_already_exist_list, 'conf_file':conf_file}
+        return {'line_index_list':line_index_redirect_already_exist_list, 'line_list':line_redirect_already_exist_list, 'url_list':url_redirect_already_exist_list}
     
     def edit_file_line(self, line_index, new_line):
         conf_file = self.filepath
@@ -55,21 +68,28 @@ class Myredirect:
     def chgcurl(self):
         pass
     
-    def build_redirect(self):
+    def chg_pre_build(self):
+        pass
+
+    def build_chg_undo_redirect(self):
+        
+        pass
+
+    def build_chg_new_redircet(self):
         protocol = str(self.protocol).strip().upper()
         source_url = str(self.source_url).strip().split()
         dest_url = str(self.dest_url).strip()
         
+        # Carregando o arquivo de configuração
+        conf_file = self.read_conf_file()
+
         # Cria a linha comentada referenciando o numero do protocolo
         if protocol[0] != '#':
             protocol = '#'+protocol
 
-        # Compila os inputs para criar a lista de regras
+        # criar a lista de regras
         rule_list = []
-        compile1 = re.compile(r'^http[s]?.*com/', flags=re.IGNORECASE)
-        for url in source_url:
-            replace1 = compile1.sub(r'rewrite ^/',url)
-            rule_list.append(replace1+f'$ {dest_url} permanent;')
+        rule_list = self.create_rule_list()
         
         # Checa se a URL de destino informada está OK
         dest_url_ok = self.check_dest_url_ok()
@@ -79,15 +99,22 @@ class Myredirect:
         # Retorna as URLs informadas que ja possuem redirect configurado no arquivo
         rae = self.check_redirect_already_exist()
         
-        # Se a URL informada já possuir redirect configurado no arquivo, a sua linha é comentada
-        new_lines=[]
-        if rae['line_index_list'][0] != "" :
+        # Se a URL informada já possuir redirect configurado no arquivo, sua linha é comentada
+        comment_line_list = []
+        if rae['line_index_list'] != "":
             for index in rae['line_index_list']:
-                new_line = '#'+rae['conf_file'][index]
-                self.edit_file_line(index, new_line)
-                new_lines.append(str(index)+' '+new_line)
+                comment_line = '#'+conf_file[index]
+                self.edit_file_line(index, comment_line)
+                comment_line_list.append(str(index)+' '+comment_line)
+
+        # Insere as CHGs no arquivo
+        for line in conf_file:
+            if line.find('# EOF') != -1:
+                eof_index = conf_file.index(line)
                 
-        return {'prot':protocol, 'rule':rule_list, 'dest_url_ok':dest_url_ok, 'rae':rae, 'new_lines':new_lines}
+            pass
+
+        return {'prot':protocol, 'rule_list':rule_list, 'conf_file':conf_file, 'dest_url_ok':dest_url_ok, 'rae':rae, 'comment_line_list':comment_line_list}
 
 class Usuario:
     def __init__(self, id, nome, senha):
@@ -100,7 +127,7 @@ usuario2 = Usuario('Nico', 'Nico Steppat', '123')
 
 usuarios = {usuario1.id: usuario1,
             usuario2.id: usuario2}
-redirect_input_list = []
+chg_input_list = []
 
 @app.route('/')
 def index():
@@ -118,13 +145,13 @@ def create():
     source_url = request.form['source_url']
     dest_url = request.form['dest_url']
     myredirect = Myredirect(protocol, source_url, dest_url)
-    redirect_input = myredirect.build_redirect()
-    redirect_input_list.append(redirect_input)
+    chg_input = myredirect.build_chg_new_redircet()
+    chg_input_list.append(chg_input)
     return redirect(url_for('verbose'))
 
 @app.route('/verbose')
 def verbose():
-    return render_template('verbose.html', titulo='Meus Redirects', redirect_input_list=redirect_input_list)
+    return render_template('verbose.html', titulo='Meus Redirects', chg_input_list=chg_input_list)
 
 @app.route('/login')
 def login():
