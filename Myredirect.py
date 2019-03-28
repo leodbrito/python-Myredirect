@@ -28,7 +28,7 @@ class Myredirect:
 
     def check_dest_url_ok(self):
         dest_url = str(self.dest_url).strip()
-        p1 = subprocess.Popen(['curl', '-sIL' , dest_url], stdout=subprocess.PIPE)
+        p1 = subprocess.Popen(['curl', '-sIL', '--connect-timeout 3', dest_url], stdout=subprocess.PIPE)
         p2 = subprocess.Popen(['grep', ' 200'], stdin=p1.stdout, stdout=subprocess.PIPE)
         p1.stdout.close()
         output = str(p2.communicate()[0].decode()).strip()
@@ -111,8 +111,15 @@ class Myredirect:
         for line in conf_file:
             if line.find('# EOF') != -1:
                 eof_index = conf_file.index(line)
-                
-            pass
+        if eof_index != "":
+            format_rules = ""
+            for rule in rule_list:
+                if format_rules == "":
+                    format_rules = f'{rule}'
+                else:
+                    format_rules = f'{format_rules}\n{rule}'
+            new_lines = f'{protocol}\n{format_rules}\n\n# EOF'
+            self.edit_file_line(eof_index, new_lines)
 
         return {'prot':protocol, 'rule_list':rule_list, 'conf_file':conf_file, 'dest_url_ok':dest_url_ok, 'rae':rae, 'comment_line_list':comment_line_list}
 
