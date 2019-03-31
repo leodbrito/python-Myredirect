@@ -46,13 +46,15 @@ with open(conf_file,'w') as f:
 
 ##############################################################################################
 ##############################################################################################
+import re, subprocess
+def check_dest_url_ok(dest_url):
+    p1 = subprocess.Popen(['curl', '-sIL', '--connect-timeout', '3', dest_url], stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(['grep', ' 200'], stdin=p1.stdout, stdout=subprocess.PIPE)
+    p1.stdout.close()
+    output = str(p2.communicate()[0].decode()).strip()
+    if output.find(' 200') != -1 :
+        print('True')
+    else:
+        print('False')
 
-dest_url = 'http://formulario-colaborativo.globo.com/campaign/571'
-p1 = subprocess.Popen(['curl', '-sIL' , dest_url], stdout=subprocess.PIPE)
-p2 = subprocess.Popen(['grep', ' 200'], stdin=p1.stdout, stdout=subprocess.PIPE)
-p1.stdout.close()
-output = str(p2.communicate()[0].decode()).strip()
-if output.find(' 200') != -1 :
-    print('True')
-else:
-    print('False')
+check_dest_url_ok('https://assine.globo.com/panfleto/globo.com-cartolapro.html')

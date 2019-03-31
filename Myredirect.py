@@ -28,7 +28,7 @@ class Myredirect:
 
     def check_dest_url_ok(self):
         dest_url = str(self.dest_url).strip()
-        p1 = subprocess.Popen(['curl', '-sIL', '--connect-timeout 3', dest_url], stdout=subprocess.PIPE)
+        p1 = subprocess.Popen(['curl', '-sIL', '--connect-timeout', '3', dest_url], stdout=subprocess.PIPE)
         p2 = subprocess.Popen(['grep', ' 200'], stdin=p1.stdout, stdout=subprocess.PIPE)
         p1.stdout.close()
         output = str(p2.communicate()[0].decode()).strip()
@@ -69,19 +69,9 @@ class Myredirect:
         pass
     
     def chg_pre_build(self):
-        pass
-
-    def build_chg_undo_redirect(self):
-        
-        pass
-
-    def build_chg_new_redircet(self):
         protocol = str(self.protocol).strip().upper()
         source_url = str(self.source_url).strip().split()
         dest_url = str(self.dest_url).strip()
-        
-        # Carregando o arquivo de configuração
-        conf_file = self.read_conf_file()
 
         # Cria a linha comentada referenciando o numero do protocolo
         if protocol[0] != '#':
@@ -98,6 +88,39 @@ class Myredirect:
 
         # Retorna as URLs informadas que ja possuem redirect configurado no arquivo
         rae = self.check_redirect_already_exist()
+        
+        return {'prot':protocol, 'rule_list':rule_list, 'dest_url_ok':dest_url_ok, 'rae':rae}
+        
+
+    def build_chg_new_redircet(self):
+        #protocol = str(self.protocol).strip().upper()
+        #source_url = str(self.source_url).strip().split()
+        #dest_url = str(self.dest_url).strip()
+        
+        # Carregando o arquivo de configuração
+        conf_file = self.read_conf_file()
+
+        # Carregando os dados do pre build
+        chg_pre_build = self.chg_pre_build()
+        protocol = chg_input_list['prot']
+        rae = chg_pre_build['rae']
+        rule_list = chg_pre_build['rule_list']
+
+        # Cria a linha comentada referenciando o numero do protocolo
+        #if protocol[0] != '#':
+        #    protocol = '#'+protocol
+
+        # criar a lista de regras
+        #rule_list = []
+        #rule_list = self.create_rule_list()
+        
+        # Checa se a URL de destino informada está OK
+        #dest_url_ok = self.check_dest_url_ok()
+        #if not dest_url_ok:
+        #    dest_url_ok = f'ATENÇÃO: a URL de destino, {dest_url}, NÃO está retornando status 200, necessário checar!'
+
+        # Retorna as URLs informadas que ja possuem redirect configurado no arquivo
+        #rae = self.check_redirect_already_exist()
         
         # Se a URL informada já possuir redirect configurado no arquivo, sua linha é comentada
         comment_line_list = []
@@ -121,7 +144,7 @@ class Myredirect:
             new_lines = f'{protocol}\n{format_rules}\n\n# EOF'
             self.edit_file_line(eof_index, new_lines)
 
-        return {'prot':protocol, 'rule_list':rule_list, 'conf_file':conf_file, 'dest_url_ok':dest_url_ok, 'rae':rae, 'comment_line_list':comment_line_list}
+        return {'conf_file':conf_file, 'comment_line_list':comment_line_list}#, 'prot':protocol, 'rule_list':rule_list, 'dest_url_ok':dest_url_ok, 'rae':rae, }
 
 class Usuario:
     def __init__(self, id, nome, senha):
@@ -152,7 +175,8 @@ def create():
     source_url = request.form['source_url']
     dest_url = request.form['dest_url']
     myredirect = Myredirect(protocol, source_url, dest_url)
-    chg_input = myredirect.build_chg_new_redircet()
+    #chg_input = myredirect.build_chg_new_redircet()
+    chg_input = myredirect.chg_pre_build()
     chg_input_list.append(chg_input)
     return redirect(url_for('verbose'))
 

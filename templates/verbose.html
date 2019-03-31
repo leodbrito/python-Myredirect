@@ -17,7 +17,7 @@
                         </br><b>{{ input.dest_url_ok }}</b>
                     {% endif %}
                     {% if input.rae['line_index_list'] != "" %}
-                        {% for item in input.comment_line_list %}
+                        {% for item in input.rae['line_list'] %}
                             </br><b>{{ item }}</b>
                         {% endfor %}
                     {% endif %}
