@@ -84,9 +84,10 @@ class Myredirect:
         # Checa se a URL de destino informada está OK
         dest_url_ok = self.check_dest_url_ok()
         if not dest_url_ok:
-            dest_url_ok = f'ATENÇÃO: a URL de destino, {dest_url}, NÃO está retornando status 200, necessário checar!'
+            dest_url_ok = f'ATENÇÃO: A URL de destino, {dest_url}, NÃO está retornando status 200, necessário checar!'
 
-        # Retorna as URLs informadas que ja possuem redirect configurado no arquivo
+        # Instancia a função check_redirect_already_exist (rae) que verifica e retorna um dicionario com os indces e 
+        # suas linhas, bem como as URLs informadas que ja possuem redirect configurado no arquivo
         rae = self.check_redirect_already_exist()
         
         return {'prot':protocol, 'rule_list':rule_list, 'dest_url_ok':dest_url_ok, 'rae':rae}
@@ -102,7 +103,7 @@ class Myredirect:
 
         # Carregando os dados do pre build
         chg_pre_build = self.chg_pre_build()
-        protocol = chg_input_list['prot']
+        protocol = chg_pre_build['prot']
         rae = chg_pre_build['rae']
         rule_list = chg_pre_build['rule_list']
 
@@ -144,7 +145,7 @@ class Myredirect:
             new_lines = f'{protocol}\n{format_rules}\n\n# EOF'
             self.edit_file_line(eof_index, new_lines)
 
-        return {'conf_file':conf_file, 'comment_line_list':comment_line_list}#, 'prot':protocol, 'rule_list':rule_list, 'dest_url_ok':dest_url_ok, 'rae':rae, }
+        return {'comment_line_list':comment_line_list}#, 'prot':protocol, 'rule_list':rule_list, 'dest_url_ok':dest_url_ok, 'rae':rae, }
 
 class Usuario:
     def __init__(self, id, nome, senha):
@@ -157,16 +158,26 @@ usuario2 = Usuario('Nico', 'Nico Steppat', '123')
 
 usuarios = {usuario1.id: usuario1,
             usuario2.id: usuario2}
+
+# Lista de CHGs a serem configuradas
 chg_input_list = []
+# Lista de objetos do tipo Myredirect
+myredirect_list = []
+# Variavel para carregar o arquivo de configuração
+changed_conf_file = ""
 
 @app.route('/')
 def index():
-    return render_template('login.html', proxima=url_for('new'))
+    return render_template('login.html', proxima=url_for('welcome'))
+
+@app.route('/welcome')
+def welcome():
+    if 'logged_user' not in session or session['logged_user'] == None:
+        return redirect(url_for('login', proxima=url_for('welcome')))
+    return render_template('welcome.html', titulo='Bem Vindo!')
 
 @app.route('/new')
 def new():
-    if 'logged_user' not in session or session['logged_user'] == None:
-        return redirect(url_for('login', proxima=url_for('new')))
     return render_template('new.html', titulo='Novo Redirect')
 
 @app.route('/create', methods=['POST',])
@@ -175,14 +186,28 @@ def create():
     source_url = request.form['source_url']
     dest_url = request.form['dest_url']
     myredirect = Myredirect(protocol, source_url, dest_url)
+    myredirect_list.append(myredirect)
     #chg_input = myredirect.build_chg_new_redircet()
     chg_input = myredirect.chg_pre_build()
     chg_input_list.append(chg_input)
-    return redirect(url_for('verbose'))
+    return redirect(url_for('check_pre_build'))
 
-@app.route('/verbose')
-def verbose():
-    return render_template('verbose.html', titulo='Meus Redirects', chg_input_list=chg_input_list)
+@app.route('/check_pre_build')
+def check_pre_build():
+    return render_template('check_pre_build.html', titulo='Meus Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
+
+#@app.route('/build_chg')
+#def build_chg():
+#    myredirect_list = request.args.get('myredirect_list')
+#    for myredirect in myredirect_list:
+#        myredirect.build_chg_new_redircet()
+#    @locals
+#    changed_conf_file = Myredirect().read_conf_file()
+#    return redirect(url_for('verbose', changed_conf_file='changed_conf_file'))
+
+#@app.route('/verbose')
+#def verbose():
+#    return render_template('verbose.html', titulo='Meus Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
 
 @app.route('/login')
 def login():
