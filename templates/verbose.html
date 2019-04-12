@@ -1,29 +1,19 @@
 {% extends "template.html" %}
 {% block conteudo %}
-    <table class="table table-striped table-responsive table-bordered">
+    <table class="table table-striped table-responsive">
         <thead>
             <tr>
-                <th>Meus Redirects</th>
+                <th>Arquivo de Configuração "show-services" modificado</th>
             </tr>
         </thead>
         <tbody>
-        {% for input in chg_input_list %}
             <tr>
-                <td>{{ input.prot }}</br>
-                    {% for item in input.rule_list %}
-                        {{ item }}</br>
+                <td>
+                    {% for input in changed_conf_file %}
+                        {{ input }}</br>
                     {% endfor %}
-                    {% if input.dest_url_ok != True %}
-                        </br><b>{{ input.dest_url_ok }}</b>
-                    {% endif %}
-                    {% if input.rae['line_index_list'] != "" %}
-                        {% for item in input.rae['line_list'] %}
-                            </br><b>{{ item }}</b>
-                        {% endfor %}
-                    {% endif %}
                 </td>
             </tr>
-        {% endfor %}
         </tbody>
     </table>
 {% endblock %}

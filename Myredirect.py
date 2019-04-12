@@ -42,6 +42,7 @@ class Myredirect:
         line_index_redirect_already_exist_list= []
         url_redirect_already_exist_list = []
         line_redirect_already_exist_list = []
+        will_comment_line_list = ['[ ATENÇÃO ]: As seguintes linhas serão comentadas no arquivo de configuração:']
         conf_file = self.read_conf_file()
         compile1 = re.compile(r'^(http[s]?|www|gshow|ge|globoesporte|g1).*com(.br)?/', flags=re.IGNORECASE)
         for url in source_url:
@@ -51,8 +52,9 @@ class Myredirect:
                     line_index_redirect_already_exist_list.append(conf_file.index(line))
                     url_redirect_already_exist_list.append(url)
                     line_redirect_already_exist_list.append(line)
+                    will_comment_line_list.append(str(conf_file.index(line))+'\t'+line)
         
-        return {'line_index_list':line_index_redirect_already_exist_list, 'line_list':line_redirect_already_exist_list, 'url_list':url_redirect_already_exist_list}
+        return {'line_index_list':line_index_redirect_already_exist_list, 'line_list':line_redirect_already_exist_list, 'url_list':url_redirect_already_exist_list, 'will_comment_line_list':will_comment_line_list}
     
     def edit_file_line(self, line_index, new_line):
         conf_file = self.filepath
@@ -74,7 +76,7 @@ class Myredirect:
         dest_url = str(self.dest_url).strip()
 
         # Cria a linha comentada referenciando o numero do protocolo
-        if protocol[0] != '#':
+        if protocol != "" and  protocol[0] != '#':
             protocol = '#'+protocol
 
         # criar a lista de regras
@@ -84,7 +86,7 @@ class Myredirect:
         # Checa se a URL de destino informada está OK
         dest_url_ok = self.check_dest_url_ok()
         if not dest_url_ok:
-            dest_url_ok = f'ATENÇÃO: A URL de destino, {dest_url}, NÃO está retornando status 200, necessário checar!'
+            dest_url_ok = f'[ ATENÇÃO ]: A URL de destino, {dest_url}, NÃO está retornando status 200, necessário checar!'
 
         # Instancia a função check_redirect_already_exist (rae) que verifica e retorna um dicionario com os indces e 
         # suas linhas, bem como as URLs informadas que ja possuem redirect configurado no arquivo
@@ -94,9 +96,6 @@ class Myredirect:
         
 
     def build_chg_new_redircet(self):
-        #protocol = str(self.protocol).strip().upper()
-        #source_url = str(self.source_url).strip().split()
-        #dest_url = str(self.dest_url).strip()
         
         # Carregando o arquivo de configuração
         conf_file = self.read_conf_file()
@@ -106,22 +105,6 @@ class Myredirect:
         protocol = chg_pre_build['prot']
         rae = chg_pre_build['rae']
         rule_list = chg_pre_build['rule_list']
-
-        # Cria a linha comentada referenciando o numero do protocolo
-        #if protocol[0] != '#':
-        #    protocol = '#'+protocol
-
-        # criar a lista de regras
-        #rule_list = []
-        #rule_list = self.create_rule_list()
-        
-        # Checa se a URL de destino informada está OK
-        #dest_url_ok = self.check_dest_url_ok()
-        #if not dest_url_ok:
-        #    dest_url_ok = f'ATENÇÃO: a URL de destino, {dest_url}, NÃO está retornando status 200, necessário checar!'
-
-        # Retorna as URLs informadas que ja possuem redirect configurado no arquivo
-        #rae = self.check_redirect_already_exist()
         
         # Se a URL informada já possuir redirect configurado no arquivo, sua linha é comentada
         comment_line_list = []
@@ -145,7 +128,7 @@ class Myredirect:
             new_lines = f'{protocol}\n{format_rules}\n\n# EOF'
             self.edit_file_line(eof_index, new_lines)
 
-        return {'comment_line_list':comment_line_list}#, 'prot':protocol, 'rule_list':rule_list, 'dest_url_ok':dest_url_ok, 'rae':rae, }
+        return {'comment_line_list':comment_line_list}
 
 class Usuario:
     def __init__(self, id, nome, senha):
@@ -187,7 +170,6 @@ def create():
     dest_url = request.form['dest_url']
     myredirect = Myredirect(protocol, source_url, dest_url)
     myredirect_list.append(myredirect)
-    #chg_input = myredirect.build_chg_new_redircet()
     chg_input = myredirect.chg_pre_build()
     chg_input_list.append(chg_input)
     return redirect(url_for('check_pre_build'))
@@ -196,18 +178,32 @@ def create():
 def check_pre_build():
     return render_template('check_pre_build.html', titulo='Meus Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
 
-#@app.route('/build_chg')
-#def build_chg():
-#    myredirect_list = request.args.get('myredirect_list')
-#    for myredirect in myredirect_list:
-#        myredirect.build_chg_new_redircet()
-#    @locals
-#    changed_conf_file = Myredirect().read_conf_file()
-#    return redirect(url_for('verbose', changed_conf_file='changed_conf_file'))
+@app.route('/clean_pre_build')
+def clean_pre_build():
+    global chg_input_list
+    chg_input_list = []
+    return render_template('check_pre_build.html', titulo='Meus Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
 
-#@app.route('/verbose')
-#def verbose():
-#    return render_template('verbose.html', titulo='Meus Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
+@app.route('/clean_chg_input')
+def clean_chg_input():
+    chg_input = request.form['chg_input']
+    global chg_input_list
+    chg_input_list.remove(chg_input)
+    return render_template('check_pre_build.html', titulo='Meus Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
+
+@app.route('/build_chg')
+def build_chg():
+    for myredirect in myredirect_list:
+        myredirect.build_chg_new_redircet()
+    global changed_conf_file
+    changed_conf_file = Myredirect().read_conf_file()
+    return redirect(url_for('verbose', changed_conf_file='changed_conf_file'))
+
+@app.route('/verbose')
+def verbose():
+    global chg_input_list
+    chg_input_list = []
+    return render_template('verbose.html', titulo='Meus Redirects', changed_conf_file=changed_conf_file)
 
 @app.route('/login')
 def login():
