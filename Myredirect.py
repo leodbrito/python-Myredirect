@@ -181,15 +181,19 @@ def check_pre_build():
 @app.route('/clean_pre_build')
 def clean_pre_build():
     global chg_input_list
+    global myredirect_list
     chg_input_list = []
+    myredirect_list = []
     return render_template('check_pre_build.html', titulo='Meus Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
 
-@app.route('/clean_chg_input')
-def clean_chg_input():
-    chg_input = request.form['chg_input']
+@app.route('/clean_chg_input/<chg_input_prot>')
+@app.route('/clean_chg_input_prot', defaults={'chg_input_prot':None})
+def clean_chg_input(chg_input_prot=None):
     global chg_input_list
-    chg_input_list.remove(chg_input)
-    return render_template('check_pre_build.html', titulo='Meus Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
+    for chg_input in chg_input_list:
+        if chg_input.prot() == chg_input_prot:
+            chg_input_list.remove(chg_input)
+    return redirect(url_for('check_pre_build.html', titulo='Meus Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list))
 
 @app.route('/build_chg')
 def build_chg():

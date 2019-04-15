@@ -7,6 +7,32 @@
             </tr>
         </thead>
         <tbody>
+            {% for input in myredirect_list %}
+                <tr>
+                    <td>{{ input.chg_pre_build().prot }}</br>
+                        {% for item in input.chg_pre_build().rule_list %}
+                            {{ item }}</br>
+                        {% endfor %}
+                        {% if input.chg_pre_build().dest_url_ok != True %}
+                            </br><b class="alert-danger">{{ input.chg_pre_build().dest_url_ok }}</b>
+                        {% endif %}
+                        {% if input.chg_pre_build().rae['line_index_list'][0] %}
+                            {% for item in input.chg_pre_build().rae['will_comment_line_list'] %}
+                                </br><b class="alert-danger">{{ item }}</b>
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                    <td>
+                    <!--    <form method="GET" action="{{ url_for('clean_chg_input') }}">
+                            <input type="hidden" name="chg_input" value="{{ input }}">
+                            <p><button class="btn btn-primary btn-sm" type="submit" >Excluir CHG</button></p>
+                        </form> -->
+                        <a class="btn btn-primary btn-sm" href="/clean_chg_input/{{ input.chg_pre_build().prot }}">Excluir CHG</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <!--<tbody>
             {% for input in chg_input_list %}
                 <tr>
                     <td>{{ input.prot }}</br>
@@ -14,37 +40,32 @@
                             {{ item }}</br>
                         {% endfor %}
                         {% if input.dest_url_ok != True %}
-                            </br><b>{{ input.dest_url_ok }}</b>
+                            </br><b class="alert-danger">{{ input.dest_url_ok }}</b>
                         {% endif %}
                         {% if input.rae['line_index_list'][0] %}
                             {% for item in input.rae['will_comment_line_list'] %}
-                                </br><b>{{ item }}</b>
+                                </br><b class="alert-danger">{{ item }}</b>
                             {% endfor %}
                         {% endif %}
                     </td>
-                    <td align="center">
+                    <td>
                         <form method="GET" action="{{ url_for('clean_chg_input') }}">
                             <input type="hidden" name="chg_input" value="{{ input }}">
-                            <p><button class="btn btn-primary" type="submit" >Remove</button></p>
+                            <p><button class="btn btn-primary btn-sm" type="submit" >Excluir CHG</button></p>
                         </form>
+                        <a class="btn btn-primary btn-sm" href="/clean_chg_input/{{ input.prot }}">Excluir CHG</a>
                     </td>
                 </tr>
             {% endfor %}
-        </tbody>
+        </tbody>-->
     </table>
     <table class="table table-responsive">
         <tbody>
             <tr>
                 <td>
-                    <div>
-                        <a href="/build_chg">Build CHGs</a>
-                    </div>
-                    <div>
-                        <a href="/clean_pre_build">Limpar CHGs</a>
-                    </div>
-                    <div>
-                        <a href="/new">Nova CHG</a>
-                    </div>
+                    <a class="btn btn-primary" href="/build_chg">Build CHGs</a>
+                    <a class="btn btn-primary" href="/clean_pre_build">Limpar CHGs</a>
+                    <a class="btn btn-primary" href="/new">Nova CHG</a>
                 </td>
             </tr>
         <!-- <tr>

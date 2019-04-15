@@ -21,13 +21,10 @@
             <tbody>
               <tr>
                 <td>
-                  <form method="GET" action="{{ url_for('welcome') }}">
-                    <p><button class="btn btn-primary" type="submit">Home</button></p>
-                  </form>
+                  <a class="btn btn-primary" href="/welcome">Home</a>
                 </td>
                 <td align="right">
-                  <form method="GET" action="{{ url_for('logout') }}">
-                    <p><button class="btn btn-primary" type="submit">Logout</button></p>
+                    <a class="btn btn-primary" href="/logout">Logout</a>
                   </form>
                 </td>
               </tr>
