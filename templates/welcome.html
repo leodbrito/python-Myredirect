@@ -1,9 +1,11 @@
 {% extends "template.html" %}
 {% block conteudo %}
     <div class="container">
-        <form method="GET" action="{{ url_for('new') }}">
+        <!--<form method="GET" action="{{ url_for('new') }}">
         </br>
             <p><button class="btn btn-primary" type="submit">Nova CHG</button></p>
-        </form>
+        </form>-->
+        <a class="btn btn-primary" href="/new">Novo Redircet</a>
+        <a class="btn btn-primary" href="/undo">Desfazer Redirect</a>
     </div>
 {% endblock %}

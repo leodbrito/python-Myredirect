@@ -1,0 +1,17 @@
+{% extends "template.html" %}
+{% block conteudo %}
+    <form action="{{ url_for('create_pre_undo') }}" method="post">
+        <fieldset>
+          <div class="form-group">
+            <label for="protocol">Nº do Protocolo</label>
+            <input type="text" id="protocol" name="protocol" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="source_url">URL(s) de Origem</label>
+            <textarea id="source_url" name="source_url" class="form-control" rows="8"></textarea>
+          </div>
+            <button type="submit" class="btn btn-primary">Avançar >></button>
+          </div>
+        </fieldset>
+    </form>
+{% endblock %}
