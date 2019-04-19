@@ -3,22 +3,29 @@
     <table class="table table-striped table-responsive table-bordered">
         <thead>
             <tr>
-                <th colspan="2">CHGs que Serão Configuradas no Arquivo de Configuração "show-services"</th>
+                {% if titulo == "Novos Redirects" %}
+                    <th colspan="2">CHGs que Serão Configuradas no Arquivo de Configuração "show-services"</th>
+                {% else %}
+                    <th colspan="2">CHGs que Serão Desfeitas(Comentadas) no Arquivo de Configuração "show-services"</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for input in chg_input_list %}
                 <tr>
-                    <td>{{ '#'+input.prot }}</br>
-                        {% for item in input.rule_list %}
-                            {{ item }}</br>
-                        {% endfor %}
-                        {% if input.dest_url_ok != True %}
-                            </br><b class="alert-danger">{{ input.dest_url_ok }}</b>
+                    <td>
+                        {% if titulo == "Novos Redirects" %}
+                            {{ '#'+input.prot }}</br>
+                            {% for item in input.rule_list %}
+                                {{ item }}</br>
+                            {% endfor %}
+                            {% if input.dest_url_ok != True %}
+                                </br><b class="alert-danger">{{ input.dest_url_ok }}</b></br>
+                            {% endif %}
                         {% endif %}
                         {% if input.rae['line_index_list'][0] %}
                             {% for item in input.rae['will_comment_line_list'] %}
-                                </br><b class="alert-danger">{{ item }}</b>
+                                <b class="alert-danger">{{ item }}</b></br>
                             {% endfor %}
                         {% endif %}
                     </td>
@@ -35,7 +42,11 @@
                 <td>
                     <a class="btn btn-primary" href="/build_chg">Build CHGs</a>
                     <a class="btn btn-primary" href="/clean_all">Limpar CHGs</a>
-                    <a class="btn btn-primary" href="/new">Nova CHG</a>
+                    {% if titulo == "Novos Redirects" %}
+                        <a class="btn btn-primary" href="/new">Nova CHG</a>
+                    {% else %}
+                        <a class="btn btn-primary" href="/undo">Nova CHG</a>
+                    {% endif %}
                 </td>
             </tr>
         </tbody>

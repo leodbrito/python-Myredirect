@@ -78,14 +78,15 @@ class Myredirect:
         rule_list = []
         rule_list = self.create_rule_list()
         # Checa se a URL de destino informada está OK
-        dest_url_ok = self.check_dest_url_ok()
-        if not dest_url_ok:
-            dest_url_ok = f'[ ATENÇÃO ]: A URL de destino, {dest_url}, NÃO está retornando status 200, necessário checar!'
+        dest_url_ok = True
+        if dest_url != "":
+            dest_url_ok = self.check_dest_url_ok()
+            if not dest_url_ok:
+                dest_url_ok = f'[ ATENÇÃO ]: A URL de destino, {dest_url}, NÃO está retornando status 200, necessário checar!'
         # Instancia a função check_redirect_already_exist (rae) que verifica e retorna um dicionario com os indces e 
         # suas linhas, bem como as URLs informadas que ja possuem redirect configurado no arquivo
         rae = self.check_redirect_already_exist()
         return {'prot':protocol, 'rule_list':rule_list, 'dest_url_ok':dest_url_ok, 'rae':rae}
-        
 
     def build_chg_new_redircet(self):  
         # Carregando o arquivo de configuração
@@ -102,32 +103,21 @@ class Myredirect:
                 comment_line = '#'+conf_file[index]
                 self.edit_file_line(index, comment_line)
                 comment_line_list.append(str(index)+' '+comment_line)
-        # Insere as CHGs no arquivo
-        for line in conf_file:
-            if line.find('# EOF') != -1:
-                eof_index = conf_file.index(line)
-        if eof_index != "":
-            format_rules = ""
-            for rule in rule_list:
-                if format_rules == "":
-                    format_rules = f'{rule}'
-                else:
-                    format_rules = f'{format_rules}\n{rule}'
-            new_lines = f'#{protocol}\n{format_rules}\n\n# EOF'
-            self.edit_file_line(eof_index, new_lines)
+        # Insere as CHGs no arquivo se existir uma URL de destino
+        if self.dest_url != "":
+            for line in conf_file:
+                if line.find('# EOF') != -1:
+                    eof_index = conf_file.index(line)
+            if eof_index != "":
+                format_rules = ""
+                for rule in rule_list:
+                    if format_rules == "":
+                        format_rules = f'{rule}'
+                    else:
+                        format_rules = f'{format_rules}\n{rule}'
+                new_lines = f'#{protocol}\n{format_rules}\n\n# EOF'
+                self.edit_file_line(eof_index, new_lines)
         return {'comment_line_list':comment_line_list}
-
-    def chg_pre_undo(self):
-        protocol = str(self.protocol).strip().upper()
-        source_url = str(self.source_url).strip().split()
-        # Instancia a função check_redirect_already_exist (rae) que verifica e retorna um dicionario com os indces e 
-        # suas linhas, bem como as URLs informadas que ja possuem redirect configurado no arquivo
-        rae = self.check_redirect_already_exist()
-        return {'prot':protocol, 'rae':rae}
-
-    def build_chg_undo(self):
-        rae = self.check_redirect_already_exist()
-        pass
 
     def search_by_protocol(self):
         protocol = str(self.protocol).strip().upper()
@@ -156,12 +146,14 @@ usuario2 = Usuario('Nico', 'Nico Steppat', '123')
 usuarios = {usuario1.id: usuario1,
             usuario2.id: usuario2}
 
-# Lista de CHGs a serem configuradas
+# Lista global de CHGs a serem configuradas
 chg_input_list = []
-# Lista de objetos do tipo Myredirect
+# Lista global de objetos do tipo Myredirect
 myredirect_list = []
-# Variavel para carregar o arquivo de configuração
+# Variavel global para carregar o arquivo de configuração
 changed_conf_file = ""
+# Variavel global para indicar se existem ou não redirects de destino
+dest_url = ""
 
 @app.route('/')
 def index():
@@ -208,53 +200,33 @@ def logout():
 def new():
     return render_template('new.html', titulo='Novo Redirect')
 
+@app.route('/undo')
+def undo():
+    return render_template('new.html', titulo='Desfazer Redirect')
+
 @app.route('/create', methods=['POST',])
 def create():
     protocol = request.form['protocol']
     source_url = request.form['source_url']
+    global dest_url
     dest_url = request.form['dest_url']
     myredirect = Myredirect(protocol, source_url, dest_url)
     myredirect_list.append(myredirect)
     chg_input = myredirect.chg_pre_build()
     chg_input_list.append(chg_input)
-    return redirect(url_for('check_pre_build'))
+    return redirect(url_for('check_pre_build', dest_url='dest_url'))
 
 @app.route('/check_pre_build')
 def check_pre_build():
-    return render_template('check_pre_build.html', titulo='Meus Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list, last_url='check_pre_build')
-
+    if dest_url != "":
+        return render_template('check_pre_build.html', titulo='Novos Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
+    else:
+        return render_template('check_pre_build.html', titulo='Desfazer Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
 
 @app.route('/build_chg')
 def build_chg():
     for myredirect in myredirect_list:
         myredirect.build_chg_new_redircet()
-    global changed_conf_file
-    changed_conf_file = Myredirect().read_conf_file()
-    return redirect(url_for('verbose', changed_conf_file='changed_conf_file'))
-
-@app.route('/undo')
-def undo():
-    return render_template('undo.html', titulo='Desfazer Redirect')
-
-@app.route('/create_pre_undo', methods=['POST',])
-def create_pre_undo():
-    protocol = request.form['protocol']
-    source_url = request.form['source_url']
-    myredirect = Myredirect(protocol, source_url)
-    myredirect_list.append(myredirect)
-    chg_input = myredirect.chg_pre_undo()
-    chg_input_list.append(chg_input)
-    #search_by_prot_return = myredirect.search_by_protocol()
-    return redirect(url_for('check_pre_undo'))
-
-@app.route('/check_pre_undo')
-def check_pre_undo():
-    return render_template('check_pre_undo.html', titulo='Desfazer Redirect', myredirect_list=myredirect_list, chg_input_list=chg_input_list, last_url='check_pre_undo')
-
-@app.route('/build_chg_undo')
-def build_chg_undo():
-    for myredirect in myredirect_list:
-        myredirect.build_chg_undo()
     global changed_conf_file
     changed_conf_file = Myredirect().read_conf_file()
     return redirect(url_for('verbose', changed_conf_file='changed_conf_file'))
@@ -278,12 +250,7 @@ def clean_chg_input(chg_input_prot):
     for myredirect in myredirect_list:
         if myredirect.protocol == chg_input_prot:
             myredirect_list.remove(myredirect)
-    #last_url = request.args.get('last_url')
-    #return last_url
-    #if last_url == "check_pre_build":
     return redirect(url_for('check_pre_build'))
-    #elif last_url == "check_pre_undo":
-    #return redirect(url_for('check_pre_undo'))
 
 @app.route('/exec_undo')
 def exec_undo():
