@@ -152,7 +152,7 @@ chg_input_list = []
 myredirect_list = []
 # Variavel global para carregar o arquivo de configuração
 changed_conf_file = ""
-# Variavel global para indicar se existem ou não redirects de destino
+# Variavel global para indicar se existem ou não redirects de destino. Caso não exista
 dest_url = ""
 
 @app.route('/')
@@ -214,7 +214,7 @@ def create():
     myredirect_list.append(myredirect)
     chg_input = myredirect.chg_pre_build()
     chg_input_list.append(chg_input)
-    return redirect(url_for('check_pre_build', dest_url='dest_url'))
+    return redirect(url_for('check_pre_build'))
 
 @app.route('/check_pre_build')
 def check_pre_build():
