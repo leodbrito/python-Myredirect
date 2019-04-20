@@ -58,3 +58,14 @@ def check_dest_url_ok(dest_url):
         print('False')
 
 check_dest_url_ok('https://assine.globo.com/panfleto/globo.com-cartolapro.html')
+
+
+##############################################################################################
+##############################################################################################
+import re, subprocess
+source_url = 'http://gshow.com.br/novelas/verao-90/noticia/resumo-de-verao-90-capitulos-de-22-a-27-de-abril.ghtml'
+p1 = subprocess.Popen(['curl', '-sIL', '--connect-timeout', '3', source_url], stdout=subprocess.PIPE)
+p2 = subprocess.Popen(['egrep', '-i', '(http|Location)'], stdin=p1.stdout, stdout=subprocess.PIPE)
+p1.stdout.close()
+output = str(p2.communicate()[0].decode()).strip()
+output.split('\n')

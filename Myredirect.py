@@ -68,7 +68,19 @@ class Myredirect:
                     f.write(line)
 
     def chgcurl(self):
-        pass
+        source_url = str(self.source_url).strip().split()
+        chgcurl = ['-----------------------------------------']
+        for url in source_url:
+            p1 = subprocess.Popen(['curl', '-sIL', '--connect-timeout', '3', url], stdout=subprocess.PIPE)
+            p2 = subprocess.Popen(['egrep', '-i', '(http|Location)'], stdin=p1.stdout, stdout=subprocess.PIPE)
+            p1.stdout.close()
+            output = str(p2.communicate()[0].decode()).strip()
+            output = output.split('\n')
+            chgcurl.append(f'curl -sIL {url} | egrep -i \'(http|location)\'')
+            chgcurl += output
+            chgcurl.append('-----------------------------------------')
+            p2.stdout.close()
+        return chgcurl
     
     def chg_pre_build(self):
         protocol = str(self.protocol).strip().upper()
@@ -86,9 +98,11 @@ class Myredirect:
         # Instancia a função check_redirect_already_exist (rae) que verifica e retorna um dicionario com os indces e 
         # suas linhas, bem como as URLs informadas que ja possuem redirect configurado no arquivo
         rae = self.check_redirect_already_exist()
-        return {'prot':protocol, 'rule_list':rule_list, 'dest_url_ok':dest_url_ok, 'rae':rae}
+        # Instancia a função chgcurl que testa o redirect na linha de comando
+        chgcurl = self.chgcurl()
+        return {'prot':protocol, 'rule_list':rule_list, 'dest_url_ok':dest_url_ok, 'rae':rae, 'chgcurl':chgcurl}
 
-    def build_chg_new_redircet(self):  
+    def build_chgs(self):  
         # Carregando o arquivo de configuração
         conf_file = self.read_conf_file()
         # Carregando os dados do pre build
@@ -103,7 +117,7 @@ class Myredirect:
                 comment_line = '#'+conf_file[index]
                 self.edit_file_line(index, comment_line)
                 comment_line_list.append(str(index)+' '+comment_line)
-        # Insere as CHGs no arquivo se existir uma URL de destino
+        # Somente caso exista URL de destino, insere as novas CHGs no arquivo
         if self.dest_url != "":
             for line in conf_file:
                 if line.find('# EOF') != -1:
@@ -154,6 +168,8 @@ myredirect_list = []
 changed_conf_file = ""
 # Variavel global para indicar se existem ou não redirects de destino. Caso não exista
 dest_url = ""
+# Lista global de testes curl para as urls de origem informadas
+chgcurl = []
 
 @app.route('/')
 def index():
@@ -226,7 +242,7 @@ def check_pre_build():
 @app.route('/build_chg')
 def build_chg():
     for myredirect in myredirect_list:
-        myredirect.build_chg_new_redircet()
+        myredirect.build_chgs()
     global changed_conf_file
     changed_conf_file = Myredirect().read_conf_file()
     return redirect(url_for('verbose', changed_conf_file='changed_conf_file'))

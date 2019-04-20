@@ -20,7 +20,7 @@
                                 {{ item }}</br>
                             {% endfor %}
                             {% if input.dest_url_ok != True %}
-                                </br><b class="alert-danger">{{ input.dest_url_ok }}</b></br>
+                                </br><b class="alert-danger">{{ input.dest_url_ok }}</b></br></br>
                             {% endif %}
                         {% endif %}
                         {% if input.rae['line_index_list'][0] %}
@@ -28,6 +28,9 @@
                                 <b class="alert-danger">{{ item }}</b></br>
                             {% endfor %}
                         {% endif %}
+                        {% for item in input.chgcurl %}
+                            <b class="alert-info">{{ item }}</b></br>
+                        {% endfor %}
                     </td>
                     <td align="center">
                         <a class="btn btn-primary btn-sm" href="/clean_chg_input/{{ input.prot }}">Excluir CHG</a>
