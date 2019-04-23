@@ -4,9 +4,9 @@
         <thead>
             <tr>
                 {% if titulo == "Novos Redirects" %}
-                    <th colspan="2">CHGs que Serão Configuradas no Arquivo de Configuração "show-services"</th>
+                    <th colspan="2" class="bg-primary">CHGs que Serão Configuradas no Arquivo de Configuração "show-services"</th>
                 {% else %}
-                    <th colspan="2">CHGs que Serão Desfeitas(Comentadas) no Arquivo de Configuração "show-services"</th>
+                    <th colspan="2" class="bg-primary">CHGs que Serão Desfeitas(Comentadas) no Arquivo de Configuração "show-services"</th>
                 {% endif %}
             </tr>
         </thead>
@@ -32,8 +32,8 @@
                             <b class="alert-info">{{ item }}</b></br>
                         {% endfor %}
                     </td>
-                    <td align="center">
-                        <a class="btn btn-primary btn-sm" href="/clean_chg_input/{{ input.prot }}">Excluir CHG</a>
+                    <td style="text-align: center; vertical-align: middle;">
+                        <a class="btn btn-primary" href="/clean_chg_input/{{ input.prot }}">Excluir CHG</a>
                     </td>
                 </tr>
             {% endfor %}

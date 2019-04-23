@@ -264,20 +264,12 @@ def clean_chg_input(chg_input_prot):
         if chg_input['prot'] == chg_input_prot:
             chg_input_list.remove(chg_input)
     for myredirect in myredirect_list:
-        if myredirect.protocol == chg_input_prot:
+        if myredirect.protocol.upper() == chg_input_prot:
             myredirect_list.remove(myredirect)
     return redirect(url_for('check_pre_build'))
 
-@app.route('/exec_undo')
-def exec_undo():
-    pass
-
 @app.route('/verbose')
 def verbose():
-    global chg_input_list
-    global myredirect_list
-    chg_input_list = []
-    myredirect_list = []
-    return render_template('verbose.html', titulo='Meus Redirects', changed_conf_file=changed_conf_file)
+    return render_template('verbose.html', titulo='Meus Redirects', changed_conf_file=changed_conf_file, myredirect_list=myredirect_list, chg_input_list=chg_input_list)
 
 app.run(debug=True, host='0.0.0.0', port=8080)
