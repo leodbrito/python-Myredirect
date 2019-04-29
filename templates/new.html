@@ -1,25 +1,29 @@
 {% extends "template.html" %}
 {% block conteudo %}
-    <form action="{{ url_for('create') }}" method="post">
-        <fieldset>
+  <form action="{{ url_for('create') }}" method="post">
+      <fieldset>
+        {% if titulo != "Nova Regra" %}
           <div class="form-group">
             <label for="protocol">Nº do Protocolo</label>
             <input type="text" id="protocol" name="protocol" class="form-control" required>
           </div>
+        {% else %}
+          <input type="hidden" id="protocol" name="protocol" value="{{ chg_input_prot }}">
+        {% endif %}
+        <div class="form-group">
+          <label for="source_url">URL(s) de Origem</label>
+          <textarea id="source_url" name="source_url" class="form-control" rows="8" required></textarea>
+        </div>
+        {% if titulo == "Novo Redirect" or "Nova Regra" %}
           <div class="form-group">
-            <label for="source_url">URL(s) de Origem</label>
-            <textarea id="source_url" name="source_url" class="form-control" rows="8" required></textarea>
+            <label for="dest_url">URL de Destino</label>
+            <input type="text" id="dest_url" name="dest_url" class="form-control" required>
           </div>
-          {% if titulo == "Novo Redirect" %}
-            <div class="form-group">
-              <label for="dest_url">URL de Destino</label>
-              <input type="text" id="dest_url" name="dest_url" class="form-control" required>
-            </div>
-          {% else %}
-            <input type="hidden" id="dest_url" name="dest_url" value="">
-          {% endif %}
-            <button type="submit" class="btn btn-primary">Avançar >></button>
-          </div>
-        </fieldset>
-    </form>
+        {% else %}
+          <input type="hidden" id="dest_url" name="dest_url" value="">
+        {% endif %}
+          <button type="submit" class="btn btn-primary">Avançar >></button>
+        </div>
+      </fieldset>
+  </form>
 {% endblock %}

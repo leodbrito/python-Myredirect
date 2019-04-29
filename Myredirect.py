@@ -36,7 +36,8 @@ class Myredirect:
             return True
         else:
             return False
-
+    
+    # Função rae (redirect_already_exist) para verificar a pré-existência da configuração de um redircet através da URL de origem informada
     def check_redirect_already_exist(self):
         source_url = str(self.source_url).strip().split()
         line_index_redirect_already_exist_list= []
@@ -110,7 +111,7 @@ class Myredirect:
         protocol = chg_pre_build['prot']
         rae = chg_pre_build['rae']
         rule_list = chg_pre_build['rule_list']
-        # Se a URL informada já possuir redirect configurado no arquivo, sua linha é comentada
+        # Se a URL de origem informada já possuir redirect configurado no arquivo, sua linha é comentada
         comment_line_list = []
         if rae['line_index_list'] != "":
             for index in rae['line_index_list']:
@@ -129,7 +130,7 @@ class Myredirect:
                         format_rules = f'{rule}'
                     else:
                         format_rules = f'{format_rules}\n{rule}'
-                new_lines = f'#{protocol}\n{format_rules}\n\n# EOF'
+                new_lines = f'#{protocol}\n{format_rules}\n\n# EOF\n'
                 self.edit_file_line(eof_index, new_lines)
         return {'comment_line_list':comment_line_list}
 
@@ -170,6 +171,8 @@ changed_conf_file = ""
 dest_url = ""
 # Lista global de testes curl para as urls de origem informadas
 chgcurl = []
+
+index_list = []
 
 @app.route('/')
 def index():
@@ -222,14 +225,27 @@ def undo():
 
 @app.route('/create', methods=['POST',])
 def create():
+    global dest_url
     protocol = request.form['protocol']
     source_url = request.form['source_url']
-    global dest_url
     dest_url = request.form['dest_url']
     myredirect = Myredirect(protocol, source_url, dest_url)
     myredirect_list.append(myredirect)
     chg_input = myredirect.chg_pre_build()
     chg_input_list.append(chg_input)
+#    for myredirect_item in myredirect_list:
+#       myredirect_index = myredirect_list.index(myredirect)
+#       if protocol == myredirect_item.protocol:
+#           teste = myredirect_item.chg_pre_build()['rule_list']
+#           for rule in myredirect_list[myredirect_index+1].chg_pre_build()['rule_list']:
+#               teste.append(rule)
+#           myredirect_list.remove(myredirect_list[myredirect_index+1])
+    for chg_input_item in chg_input_list:
+        chg_input_item_index = chg_input_list.index(chg_input_item)+1
+        for i in range(chg_input_item_index,len(chg_input_list)):
+            if  chg_input_item['prot'] == chg_input_list[i]['prot']:
+                index_list.append(chg_input_list.index(chg_input_item))
+                chg_input_list.remove(chg_input_list[i])
     return redirect(url_for('check_pre_build'))
 
 @app.route('/check_pre_build')
@@ -243,6 +259,7 @@ def check_pre_build():
 def build_chg():
     for myredirect in myredirect_list:
         myredirect.build_chgs()
+        myredirect.chg_pre_build()['rule_list']
     global changed_conf_file
     changed_conf_file = Myredirect().read_conf_file()
     return redirect(url_for('verbose', changed_conf_file='changed_conf_file'))
@@ -255,6 +272,10 @@ def clean_all():
     myredirect_list = []
     return redirect(url_for('check_pre_build'))
 
+@app.route('/new_rule_in_some_chg/<chg_input_prot>')
+def new_rule_in_some_chg(chg_input_prot):
+    return render_template('new.html', titulo='Nova Regra', chg_input_prot=chg_input_prot)
+            
 @app.route('/clean_chg_input', defaults={'chg_input_prot': None})
 @app.route('/clean_chg_input/<chg_input_prot>')
 def clean_chg_input(chg_input_prot):
