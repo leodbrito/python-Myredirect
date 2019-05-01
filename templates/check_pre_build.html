@@ -20,20 +20,33 @@
                                 {{ item }}</br>
                             {% endfor %}
                             {% if input.dest_url_ok != True %}
-                                </br><b class="alert-danger">{{ input.dest_url_ok }}</b></br></br>
+                                <div class="alert-danger" style="padding: 1%; margin-bottom: 0.5%">
+                                    <p style="text-align: center;"><b>[ ATENÇÃO ]</b></br>
+                                    <b style="text-align: center;">As URLs de destino abaixo, NÃO estão retornando status 200, necessário checar!</b></p>
+                                    {% for item in input.dest_url_ok %}
+                                        <b>{{ item }}</b></br>
+                                    {% endfor %}
+                                </div>
                             {% endif %}
                         {% endif %}
                         {% if input.rae['line_index_list'][0] %}
-                            {% for item in input.rae['will_comment_line_list'] %}
-                                <b class="alert-danger">{{ item }}</b></br>
-                            {% endfor %}
+                            <div class="alert-danger" style="padding: 1%; margin-bottom: 0.5%">
+                                <p style="text-align: center;"><b>[ ATENÇÃO ]</b></br>
+                                <b>As linhas abaixo serão comentadas no arquivo de configuração:</b></p>
+                                {% for item in input.rae['will_comment_line_list'] %}
+                                    <b>{{ item }}</b></br>
+                                {% endfor %}
+                            </div>
                         {% endif %}
-                        {% for item in input.chgcurl %}
-                            <b class="alert-info">{{ item }}</b></br>
-                        {% endfor %}
+                        <div class="alert-info">
+                            <b>-----------------------------------------</b></br>
+                            {% for item in input.chgcurl %}
+                                <b>{{ item }}</b></br>
+                            {% endfor %}
+                        </div>
                     </td>
                     <td style="text-align: center; vertical-align: middle;">
-                        <a class="btn btn-primary" href="/new_rule_in_some_chg/{{ input.prot }}">Nova Regra</a>
+                        <a class="btn btn-primary" href="/new_rule_in_some_chg/{{ input.prot }}">+ Regras</a>
                         <a class="btn btn-danger" href="/clean_chg_input/{{ input.prot }}">Excluir CHG</a>
                     </td>
                 </tr>

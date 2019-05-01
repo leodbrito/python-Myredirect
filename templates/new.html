@@ -14,7 +14,7 @@
           <label for="source_url">URL(s) de Origem</label>
           <textarea id="source_url" name="source_url" class="form-control" rows="8" required></textarea>
         </div>
-        {% if titulo == "Novo Redirect" or "Nova Regra" %}
+        {% if titulo == "Novo Redirect" or titulo == "Nova Regra" %}
           <div class="form-group">
             <label for="dest_url">URL de Destino</label>
             <input type="text" id="dest_url" name="dest_url" class="form-control" required>

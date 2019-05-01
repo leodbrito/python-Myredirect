@@ -9,11 +9,15 @@
         <tbody>
             <tr>
                 {% for input in chg_input_list %}
-                <p><b class="alert-warning">{{ input.prot }}</b></br>
+                <div class="alert-warning" style="text-align: center; vertical-align: middle; padding: 1px;">
+                    <h4>{{ input.prot }}</h4>
+                </div>
+                <div class="alert-info" style="margin-bottom: 0.5%; padding-left: 1%">
+                    <b>-----------------------------------------</b></br>
                     {% for item in input.chgcurl %}
-                        <b class="alert-info">{{ item }}</b></br>
+                        <b>{{ item }}</b></br>
                     {% endfor %}
-                </p>
+                </div>
                 {% endfor %}
             </tr>
             <tr>

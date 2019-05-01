@@ -43,7 +43,7 @@ class Myredirect:
         line_index_redirect_already_exist_list= []
         url_redirect_already_exist_list = []
         line_redirect_already_exist_list = []
-        will_comment_line_list = ['[ ATENÇÃO ]: As seguintes linhas serão comentadas no arquivo de configuração:']
+        will_comment_line_list = []#['[ ATENÇÃO ]: As seguintes linhas serão comentadas no arquivo de configuração:']
         conf_file = self.read_conf_file()
         compile1 = re.compile(r'^(http[s]?|www|gshow|ge|globoesporte|g1).*com(.br)?/', flags=re.IGNORECASE)
         for url in source_url:
@@ -70,7 +70,7 @@ class Myredirect:
 
     def chgcurl(self):
         source_url = str(self.source_url).strip().split()
-        chgcurl = ['-----------------------------------------']
+        chgcurl = []
         for url in source_url:
             p1 = subprocess.Popen(['curl', '-sIL', '--connect-timeout', '3', url], stdout=subprocess.PIPE)
             p2 = subprocess.Popen(['egrep', '-i', '(http|Location)'], stdin=p1.stdout, stdout=subprocess.PIPE)
@@ -95,7 +95,7 @@ class Myredirect:
         if dest_url != "":
             dest_url_ok = self.check_dest_url_ok()
             if not dest_url_ok:
-                dest_url_ok = f'[ ATENÇÃO ]: A URL de destino, {dest_url}, NÃO está retornando status 200, necessário checar!'
+                dest_url_ok = [dest_url]#f'[ ATENÇÃO ]: A URL de destino, {dest_url}, NÃO está retornando status 200, necessário checar!'
         # Instancia a função check_redirect_already_exist (rae) que verifica e retorna um dicionario com os indces e 
         # suas linhas, bem como as URLs informadas que ja possuem redirect configurado no arquivo
         rae = self.check_redirect_already_exist()
@@ -172,8 +172,6 @@ dest_url = ""
 # Lista global de testes curl para as urls de origem informadas
 chgcurl = []
 
-index_list = []
-
 @app.route('/')
 def index():
     return render_template('login.html', proxima=url_for('welcome'))
@@ -241,10 +239,21 @@ def create():
 #               teste.append(rule)
 #           myredirect_list.remove(myredirect_list[myredirect_index+1])
     for chg_input_item in chg_input_list:
-        chg_input_item_index = chg_input_list.index(chg_input_item)+1
-        for i in range(chg_input_item_index,len(chg_input_list)):
+        next_chg_input_item_index = chg_input_list.index(chg_input_item)+1
+        for i in range(next_chg_input_item_index,len(chg_input_list)):
             if  chg_input_item['prot'] == chg_input_list[i]['prot']:
-                index_list.append(chg_input_list.index(chg_input_item))
+                for item in chg_input_list[i]['rule_list']:
+                    chg_input_item['rule_list'].append(item)
+                for item in chg_input_list[i]['rae']['will_comment_line_list']:
+                    chg_input_item['rae']['will_comment_line_list'].append(item)
+                for item in chg_input_list[i]['chgcurl']:
+                    chg_input_item['chgcurl'].append(item)
+                if chg_input_list[i]['dest_url_ok'] != True:
+                    if chg_input_item['dest_url_ok'] == True:
+                        chg_input_item['dest_url_ok'] = chg_input_list[i]['dest_url_ok']
+                    else:
+                        for item in chg_input_list[i]['dest_url_ok']:
+                            chg_input_item['dest_url_ok'].append(item)
                 chg_input_list.remove(chg_input_list[i])
     return redirect(url_for('check_pre_build'))
 
