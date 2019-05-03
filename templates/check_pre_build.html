@@ -38,16 +38,18 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="alert-info">
+                        <!--<div class="alert-info" style="padding: 1%;">
+                            <p style="text-align: center;"><b>[ INFORMAÇÃO ]</b></br>
+                            <b style="text-align: center;">Seguem abaixo informações sobre testes nas URLs de origem:</b></p>
                             <b>-----------------------------------------</b></br>
                             {% for item in input.chgcurl %}
                                 <b>{{ item }}</b></br>
                             {% endfor %}
-                        </div>
+                        </div>-->
                     </td>
                     <td style="text-align: center; vertical-align: middle;">
-                        <a class="btn btn-primary" href="/new_rule_in_some_chg/{{ input.prot }}">+ Regras</a>
-                        <a class="btn btn-danger" href="/clean_chg_input/{{ input.prot }}">Excluir CHG</a>
+                        <a class="btn btn-primary" href="/new_rule_in_some_chg/{{ input.prot }}" style="margin: 0.5%;">+ Regras</a>
+                        <a class="btn btn-danger" href="/clean_chg_input/{{ input.prot }}" style="margin: 1%;">Excluir CHG</a>
                     </td>
                 </tr>
             {% endfor %}

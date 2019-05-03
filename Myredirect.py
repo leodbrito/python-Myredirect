@@ -43,11 +43,12 @@ class Myredirect:
         line_index_redirect_already_exist_list= []
         url_redirect_already_exist_list = []
         line_redirect_already_exist_list = []
-        will_comment_line_list = []#['[ ATENÇÃO ]: As seguintes linhas serão comentadas no arquivo de configuração:']
+        will_comment_line_list = []
         conf_file = self.read_conf_file()
         compile1 = re.compile(r'^(http[s]?|www|gshow|ge|globoesporte|g1).*com(.br)?/', flags=re.IGNORECASE)
         for url in source_url:
             rule = str(compile1.sub(r'rewrite ^/',url))
+            rule = f'{rule}$'
             for line in conf_file:
                 if line.find(rule) != -1 and line[0] != '#':
                     line_index_redirect_already_exist_list.append(conf_file.index(line))
@@ -95,7 +96,7 @@ class Myredirect:
         if dest_url != "":
             dest_url_ok = self.check_dest_url_ok()
             if not dest_url_ok:
-                dest_url_ok = [dest_url]#f'[ ATENÇÃO ]: A URL de destino, {dest_url}, NÃO está retornando status 200, necessário checar!'
+                dest_url_ok = [dest_url]
         # Instancia a função check_redirect_already_exist (rae) que verifica e retorna um dicionario com os indces e 
         # suas linhas, bem como as URLs informadas que ja possuem redirect configurado no arquivo
         rae = self.check_redirect_already_exist()
@@ -119,24 +120,40 @@ class Myredirect:
                 self.edit_file_line(index, comment_line)
                 comment_line_list.append(str(index)+' '+comment_line)
         # Somente caso exista URL de destino, insere as novas CHGs no arquivo
+        line_index = 0
+        prot_finded_index = 0
         if self.dest_url != "":
             for line in conf_file:
+                if line.find(protocol) != -1 and line[0] == '#': 
+                    prot_finded_index = conf_file.index(line)
+                    for line_index in range(prot_finded_index,len(conf_file)):
+                        if conf_file[line_index] == '\n':
+                            break
                 if line.find('# EOF') != -1:
                     eof_index = conf_file.index(line)
-            if eof_index != "":
+            if line_index != 0:
+                format_lines = ""
+                for rule in rule_list:
+                    if format_lines == "":
+                        format_lines = f'{conf_file[line_index-1]}{rule}'
+                    else:
+                        format_lines = f'{format_lines}\n{rule}'
+                new_lines = f'{format_lines}\n'
+                self.edit_file_line(line_index-1, new_lines)
+            elif eof_index != 0:
                 format_rules = ""
                 for rule in rule_list:
                     if format_rules == "":
                         format_rules = f'{rule}'
                     else:
                         format_rules = f'{format_rules}\n{rule}'
-                new_lines = f'#{protocol}\n{format_rules}\n\n# EOF\n'
+                new_lines = f'#{protocol}\n{format_rules}\n\n# EOF'
                 self.edit_file_line(eof_index, new_lines)
         return {'comment_line_list':comment_line_list}
 
     def search_by_protocol(self):
         protocol = str(self.protocol).strip().upper()
-        prot_finded_index = ""
+        prot_finded_index = 0
         if protocol[0:3] != 'CHG' and protocol[4::].isnumeric():
             protocol = 'CHG'+protocol
         conf_file = self.read_conf_file()    
@@ -199,6 +216,7 @@ def authenticate():
 
 @app.route('/welcome')
 def welcome():
+    # Limpando as listas de CHGs e testando se o usurário logado está na sessão
     global chg_input_list
     global myredirect_list
     chg_input_list = []
@@ -231,13 +249,6 @@ def create():
     myredirect_list.append(myredirect)
     chg_input = myredirect.chg_pre_build()
     chg_input_list.append(chg_input)
-#    for myredirect_item in myredirect_list:
-#       myredirect_index = myredirect_list.index(myredirect)
-#       if protocol == myredirect_item.protocol:
-#           teste = myredirect_item.chg_pre_build()['rule_list']
-#           for rule in myredirect_list[myredirect_index+1].chg_pre_build()['rule_list']:
-#               teste.append(rule)
-#           myredirect_list.remove(myredirect_list[myredirect_index+1])
     for chg_input_item in chg_input_list:
         next_chg_input_item_index = chg_input_list.index(chg_input_item)+1
         for i in range(next_chg_input_item_index,len(chg_input_list)):
@@ -268,7 +279,6 @@ def check_pre_build():
 def build_chg():
     for myredirect in myredirect_list:
         myredirect.build_chgs()
-        myredirect.chg_pre_build()['rule_list']
     global changed_conf_file
     changed_conf_file = Myredirect().read_conf_file()
     return redirect(url_for('verbose', changed_conf_file='changed_conf_file'))
