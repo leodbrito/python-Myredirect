@@ -44,6 +44,8 @@ class Myredirect:
         url_redirect_already_exist_list = []
         line_redirect_already_exist_list = []
         will_comment_line_list = []
+        prot_redirect_already_exist_list = []
+        line_index_prot_redirect_already_exist_list = []
         conf_file = self.read_conf_file()
         compile1 = re.compile(r'^(http[s]?|www|gshow|ge|globoesporte|g1).*com(.br)?/', flags=re.IGNORECASE)
         for url in source_url:
@@ -55,8 +57,13 @@ class Myredirect:
                     url_redirect_already_exist_list.append(url)
                     line_redirect_already_exist_list.append(line)
                     will_comment_line_list.append(str(conf_file.index(line))+'\t'+line)
-        
-        return {'line_index_list':line_index_redirect_already_exist_list, 'line_list':line_redirect_already_exist_list, 'url_list':url_redirect_already_exist_list, 'will_comment_line_list':will_comment_line_list}
+        for line_index in line_index_redirect_already_exist_list:
+            for i in range(line_index,0,-1):
+                if conf_file[i] == '\n':
+                    prot_redirect_already_exist_list.append(conf_file[i+1])
+                    line_index_prot_redirect_already_exist_list.append(i+1)
+                    break
+        return {'line_index_list':line_index_redirect_already_exist_list, 'line_list':line_redirect_already_exist_list, 'url_list':url_redirect_already_exist_list, 'will_comment_line_list':will_comment_line_list, 'prot_list':prot_redirect_already_exist_list, 'line_index_prot_list':line_index_prot_redirect_already_exist_list}
     
     def edit_file_line(self, line_index, new_line):
         conf_file = self.filepath
@@ -119,6 +126,10 @@ class Myredirect:
                 comment_line = '#'+conf_file[index]
                 self.edit_file_line(index, comment_line)
                 comment_line_list.append(str(index)+' '+comment_line)
+            for line_index_prot in rae['line_index_prot_list']:
+                line_prot = conf_file[line_index_prot]
+                prot_line = f'{line_prot.strip()} / {protocol}\n'
+                self.edit_file_line(line_index_prot, prot_line)
         # Somente caso exista URL de destino, insere as novas CHGs no arquivo
         line_index = 0
         prot_finded_index = 0
@@ -164,7 +175,7 @@ class Myredirect:
             if conf_file[i] == '\n':
                 break
         search_by_prot_return = conf_file[prot_finded_index:i]
-        return search_by_prot_return
+        return {'search_return':search_by_prot_return, 'prot_finded_index':prot_finded_index}
 
 class Usuario:
     def __init__(self, id, nome, senha):
