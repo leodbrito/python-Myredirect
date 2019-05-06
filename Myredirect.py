@@ -302,9 +302,12 @@ def clean_all():
     myredirect_list = []
     return redirect(url_for('check_pre_build'))
 
-@app.route('/new_rule_in_some_chg/<chg_input_prot>')
-def new_rule_in_some_chg(chg_input_prot):
-    return render_template('new.html', titulo='Nova Regra', chg_input_prot=chg_input_prot)
+@app.route('/new_rule_in_some_chg/<chg_input_prot>/<titulo>')
+def new_rule_in_some_chg(chg_input_prot, titulo):
+    if titulo == "Novos Redirects":
+        return render_template('new.html', titulo='Nova Regra', chg_input_prot=chg_input_prot)
+    else:
+        return render_template('new.html', titulo='Nova Regra a Desfazer', chg_input_prot=chg_input_prot)
             
 @app.route('/clean_chg_input', defaults={'chg_input_prot': None})
 @app.route('/clean_chg_input/<chg_input_prot>')

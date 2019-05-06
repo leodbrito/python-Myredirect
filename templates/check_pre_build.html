@@ -14,8 +14,8 @@
             {% for input in chg_input_list %}
                 <tr>
                     <td>
+                        <b>{{ '#'+input.prot }}</b></br>
                         {% if titulo == "Novos Redirects" %}
-                            {{ '#'+input.prot }}</br>
                             {% for item in input.rule_list %}
                                 {{ item }}</br>
                             {% endfor %}
@@ -48,7 +48,7 @@
                         </div>-->
                     </td>
                     <td style="text-align: center; vertical-align: middle;">
-                        <a class="btn btn-primary" href="/new_rule_in_some_chg/{{ input.prot }}" style="margin: 0.5%;">+ Regras</a>
+                        <a class="btn btn-primary" href="/new_rule_in_some_chg/{{ input.prot }}/{{ titulo }}" style="margin: 0.5%;">+ Regras</a>
                         <a class="btn btn-danger" href="/clean_chg_input/{{ input.prot }}" style="margin: 1%;">Excluir CHG</a>
                     </td>
                 </tr>
