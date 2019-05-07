@@ -9,15 +9,17 @@
         <tbody>
             <tr>
                 {% for input in chg_input_list %}
-                <div class="bg-primary" style="text-align: center; vertical-align: middle; padding: 1px;">
-                    <h4>{{ input.prot }}</h4>
-                </div>
-                <div class="alert-info" style="margin-bottom: 0.5%; padding-left: 1%">
-                    <b>-----------------------------------------</b></br>
-                    {% for item in input.chgcurl %}
-                        <b>{{ item }}</b></br>
-                    {% endfor %}
-                </div>
+                    <div class="bg-primary" style="text-align: center; vertical-align: middle; padding: 1px;">
+                        <h4>{{ input.prot }}</h4>
+                    </div>
+                    <div class="alert-info" style="margin-bottom: 0.5%; padding-left: 1%">
+                        <b>-----------------------------------------</b></br>
+                        {% for myredirect in myredirect_list %}
+                            {% for item in myredirect.chgcurl() %}
+                                <b>{{ item }}</b></br>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
                 {% endfor %}
             </tr>
             <tr>

@@ -23,7 +23,12 @@ class Myredirect:
         compile1 = re.compile(r'^(http[s]?|www|gshow|ge|globoesporte|g1).*com(.br)?/', flags=re.IGNORECASE)
         for url in source_url:
             compiled = str(compile1.sub(r'rewrite ^/',url))
-            rule_list.append(compiled+f'$ {dest_url} permanent;')
+            if url.rfind('.',-6) != -1:
+                rule_list.append(compiled+f'$ {dest_url} permanent;')
+            elif url.rfind('/',-1) != -1:
+                rule_list.append(compiled+f'?$ {dest_url} permanent;')
+            else:
+                rule_list.append(compiled+f'/?$ {dest_url} permanent;')
         return rule_list
 
     def check_dest_url_ok(self):
