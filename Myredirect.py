@@ -322,8 +322,10 @@ def clean_chg_input(chg_input_prot):
     for chg_input in chg_input_list:
         if chg_input['prot'] == chg_input_prot:
             chg_input_list.remove(chg_input)
-    for myredirect in myredirect_list:
-        if myredirect.protocol.upper() == chg_input_prot:
+    my_object_list = myredirect_list[:]
+    for myredirect in my_object_list:
+        protocol = myredirect.protocol.upper()
+        if protocol == chg_input_prot:
             myredirect_list.remove(myredirect)
     return redirect(url_for('check_pre_build'))
 
