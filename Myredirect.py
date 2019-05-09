@@ -255,8 +255,8 @@ def new():
 def undo():
     return render_template('new.html', titulo='Desfazer Redirect')
 
-@app.route('/create', methods=['POST',])
-def create():
+@app.route('/pre_build', methods=['POST',])
+def pre_build():
     global dest_url
     protocol = request.form['protocol']
     source_url = request.form['source_url']
@@ -282,14 +282,14 @@ def create():
                         for item in chg_input_list[i]['dest_url_ok']:
                             chg_input_item['dest_url_ok'].append(item)
                 chg_input_list.remove(chg_input_list[i])
-    return redirect(url_for('check_pre_build'))
+    return redirect(url_for('show_pre_build'))
 
-@app.route('/check_pre_build')
-def check_pre_build():
+@app.route('/show_pre_build')
+def show_pre_build():
     if dest_url != "":
-        return render_template('check_pre_build.html', titulo='Novos Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
+        return render_template('show_pre_build.html', titulo='Novos Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
     else:
-        return render_template('check_pre_build.html', titulo='Desfazer Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
+        return render_template('show_pre_build.html', titulo='Desfazer Redirects', myredirect_list=myredirect_list, chg_input_list=chg_input_list)
 
 @app.route('/build_chg')
 def build_chg():
@@ -305,7 +305,7 @@ def clean_all():
     global myredirect_list
     chg_input_list = []
     myredirect_list = []
-    return redirect(url_for('check_pre_build'))
+    return redirect(url_for('show_pre_build'))
 
 @app.route('/new_rule_in_some_chg/<chg_input_prot>/<titulo>')
 def new_rule_in_some_chg(chg_input_prot, titulo):
@@ -327,7 +327,7 @@ def clean_chg_input(chg_input_prot):
         protocol = myredirect.protocol.upper()
         if protocol == chg_input_prot:
             myredirect_list.remove(myredirect)
-    return redirect(url_for('check_pre_build'))
+    return redirect(url_for('show_pre_build'))
 
 @app.route('/verbose')
 def verbose():

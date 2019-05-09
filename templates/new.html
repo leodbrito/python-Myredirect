@@ -1,6 +1,6 @@
 {% extends "template.html" %}
 {% block conteudo %}
-  <form action="{{ url_for('create') }}" method="post">
+  <form action="{{ url_for('pre_build') }}" method="post">
       <fieldset>
         {% if titulo != "Nova Regra" and titulo != "Nova Regra a Desfazer" %}
           <div class="form-group">
