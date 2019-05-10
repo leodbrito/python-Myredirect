@@ -55,7 +55,12 @@ class Myredirect:
         compile1 = re.compile(r'^(http[s]?|www|gshow|ge|globoesporte|g1).*com(.br)?/', flags=re.IGNORECASE)
         for url in source_url:
             rule = str(compile1.sub(r'rewrite ^/',url))
-            rule = f'{rule}$'
+            if url.rfind('.',-6) != -1:
+                rule = f'{rule}$'
+            elif url.rfind('/',-1) != -1:
+                rule = f'{rule}?$'
+            else:
+                rule = f'{rule}/?$'
             for line in conf_file:
                 if line.find(rule) != -1 and line[0] != '#':
                     line_index_redirect_already_exist_list.append(conf_file.index(line))
@@ -122,16 +127,16 @@ class Myredirect:
         # Carregando os dados do pre build
         chg_pre_build = self.chg_pre_build()
         protocol = chg_pre_build['prot']
-        rae = chg_pre_build['rae']
+        rae_dict = chg_pre_build['rae']
         rule_list = chg_pre_build['rule_list']
         # Se a URL de origem informada já possuir redirect configurado no arquivo, sua linha é comentada
         comment_line_list = []
-        if rae['line_index_list'] != "":
-            for index in rae['line_index_list']:
+        if rae_dict['line_index_list'] != "":
+            for index in rae_dict['line_index_list']:
                 comment_line = '#'+conf_file[index]
                 self.edit_file_line(index, comment_line)
                 comment_line_list.append(str(index)+' '+comment_line)
-            for line_index_prot in rae['line_index_prot_list']:
+            for line_index_prot in rae_dict['line_index_prot_list']:
                 line_prot = conf_file[line_index_prot]
                 prot_line = f'{line_prot.strip()} / {protocol}\n'
                 self.edit_file_line(line_index_prot, prot_line)
