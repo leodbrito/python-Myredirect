@@ -8,24 +8,35 @@
         </thead>
         <tbody>
             <tr>
-                {% for input in chg_input_list %}
-                    <div class="bg-primary" style="text-align: center; vertical-align: middle; padding: 1px;">
-                        <h4>{{ input.prot }}</h4>
-                    </div>
-                    <div class="alert-info" style="margin-bottom: 0.5%; padding-left: 1%">
-                        <b>-----------------------------------------</b></br>
-                        {% for myredirect in myredirect_list %}
-                            {% for item in myredirect.chgcurl() %}
-                                <b>{{ item }}</b></br>
+                {% for item in chgcurl_list %}
+                    {% if item[0:3] == 'CHG' or item[0:3] == 'chg' %}
+                        <div class="bg-primary" style="text-align: center; vertical-align: middle; padding: 1px;">
+                            <h4>{{ item }}</h4>
+                        </div>
+                    {% else %}
+                        <div class="alert-info" style="margin-bottom: 0.5%; padding-left: 1%">
+                            <b>-----------------------------------------</b></br>
+                            {% for line in item %}
+                                <b>{{ line }}</b></br>
                             {% endfor %}
-                        {% endfor %}
-                    </div>
+                        </div>
+                    {% endif %}
                 {% endfor %}
             </tr>
             <tr>
                 <td style="color: whitesmoke; background-color: dimgray;">
                     {% for input in changed_conf_file %}
-                        {{ input }}</br>
+                        {% for new_rule in new_rule_list %}
+                            {% if input.find(new_rule) != -1 %}
+                                <b style="color:yellow;">{{ input }}</b></br>    
+                            {% endif %}
+                        {% endfor %}
+                        {% if input[0] == '#' %}
+                            <b style="color:greenyellow;">{{ input }}</b>
+                        {% else %}
+                            <b>{{ input }}</b>
+                        {% endif %}
+                        </br>
                     {% endfor %}
                 </td>
             </tr>

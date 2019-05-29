@@ -1,11 +1,16 @@
 import re, subprocess
+
 from flask import Flask, render_template, request, redirect, session, flash, url_for
 
 app = Flask(__name__)
 app.secret_key = 'bolsominion'
 
+#p1 = subprocess.Popen(['whoami'], stdout=subprocess.PIPE)
+#logname = str(p1.communicate()[0].decode()).strip()
+
 class Myredirect:
-    def __init__(self, protocol=None, source_url=None, dest_url=None, filepath='show-services.conf'):
+    #def __init__(self, protocol=None, source_url=None, dest_url=None, filepath=f'../../home/{logname}/teste/teste.conf'):
+    def __init__(self, protocol=None, source_url=None, dest_url=None, filepath=f'show-services.conf'):
         self.protocol = protocol
         self.source_url = source_url
         self.dest_url = dest_url
@@ -150,9 +155,10 @@ class Myredirect:
                     for line_index in range(prot_finded_index,len(conf_file)):
                         if conf_file[line_index] == '\n':
                             break
-                if line.find('# EOF') != -1:
+                if line.find('# EOF') != -1 or line.find('#EOF') != -1:
                     eof_index = conf_file.index(line)
             if line_index != 0:
+                # Atribuindo a variavel format_rules propositalmente para obrigar a cair no primeiro if para criar as novas linhas
                 format_lines = ""
                 for rule in rule_list:
                     if format_lines == "":
@@ -162,6 +168,7 @@ class Myredirect:
                 new_lines = f'{format_lines}\n'
                 self.edit_file_line(line_index-1, new_lines)
             elif eof_index != 0:
+                # Atribuindo a variavel format_rules propositalmente para obrigar a cair no primeiro if para criar as novas linhas
                 format_rules = ""
                 for rule in rule_list:
                     if format_rules == "":
@@ -187,6 +194,7 @@ class Myredirect:
         search_by_prot_return = conf_file[prot_finded_index:i]
         return {'search_return':search_by_prot_return, 'prot_finded_index':prot_finded_index}
 
+
 class Usuario:
     def __init__(self, id, nome, senha):
         self.id = id
@@ -208,7 +216,9 @@ changed_conf_file = ""
 # Variavel global para indicar se existem ou não redirects de destino. Caso não exista
 dest_url = ""
 # Lista global de testes curl para as urls de origem informadas
-chgcurl = []
+chgcurl_list = []
+# Lista global das novas regras
+new_rule_list = []
 
 @app.route('/')
 def index():
@@ -302,7 +312,11 @@ def build_chg():
         myredirect.build_chgs()
     global changed_conf_file
     changed_conf_file = Myredirect().read_conf_file()
-    return redirect(url_for('verbose', changed_conf_file='changed_conf_file'))
+    global new_rule_list
+    for chg_input in chg_input_list:
+        for rule in chg_input['rule_list']:
+            new_rule_list.append(rule)
+    return redirect(url_for('verbose'))
 
 @app.route('/clean_all')
 def clean_all():
@@ -336,6 +350,18 @@ def clean_chg_input(chg_input_prot):
 
 @app.route('/verbose')
 def verbose():
-    return render_template('verbose.html', titulo='Meus Redirects', changed_conf_file=changed_conf_file, myredirect_list=myredirect_list, chg_input_list=chg_input_list)
+    global chgcurl_list
+    chgcurl_list = []
+    i = 0
+    chg = ""
+    for myredirect in myredirect_list:
+        prot = myredirect.protocol.upper()
+        if i > 0:
+            cgh = myredirect_list[i-1].protocol.upper()
+        i += 1
+        if prot != chg:
+            chgcurl_list.append(prot)
+        chgcurl_list.append(myredirect.chgcurl())
+    return render_template('verbose.html', titulo='Meus Redirects', changed_conf_file=changed_conf_file, myredirect_list=myredirect_list, chg_input_list=chg_input_list, chgcurl_list=chgcurl_list, new_rule_list=new_rule_list)
 
 app.run(debug=True, host='0.0.0.0', port=8080)
